@@ -40,8 +40,16 @@ const ArtUpload = ({ spaceId }) => {
     const handleFileChange = async (e) => {
         // Retrieves the first selected file from the file input.
         const file = e.target.files[0];
+
+        // Ensure the file has a .jpg extension when saved
+        const fileName = `${spaceId}.jpg`; // Add the extension
         // Creates a ref to the existing file with space ID = current spaceId (from the art/{spaceId} directory in Firebase Storage)
-        const artRef = ref(storage, `art/${spaceId}`);
+        const artRef = ref(storage, `art/${fileName}`);
+        // Will pass this to the upload function to indicate the content type explicity
+        const metadata = {
+            contentType: 'image/jpeg',
+        };
+
         // creates a ref to the document in the DB - in the spaces collection, that corresponds to spaceId
         const docRef = doc(db, 'spaces', spaceId);
 
@@ -53,7 +61,7 @@ const ArtUpload = ({ spaceId }) => {
         }
 
         // Upload the new file to the current artRef object
-        await uploadBytes(artRef, file);
+        await uploadBytes(artRef, file, metadata);
         // Get the new file URL and store it in url
         const url = await getDownloadURL(artRef);
         // Update the state to the new art URL

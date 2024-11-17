@@ -6,9 +6,16 @@
 html, body, button {
   cursor: pointer;
   font-family: "Nunito", sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 /* app component */
+
+.app-parent-div {
+  background: linear-gradient(77.42deg, rgba(28, 216, 210, 0.25) 28.01%, rgba(147, 237, 199, 0.25) 75.05%), #FFFFFF;
+}
+
 .entrance-holder {
   display: flex;            /* Enable flexbox */
   flex-direction: column;   /* Stack items vertically */
@@ -63,6 +70,7 @@ html, body, button {
   background: none;
   background-color: transparent;
   box-shadow: none;
+  color: rgb(0, 0, 0, 0.7);
   outline: none;
   padding: 0px;
   display: block;
@@ -75,6 +83,7 @@ html, body, button {
 
 .welcome-options button:hover {
   transform: translateX(10px); /* Move the button gently rightward */
+  color: rgb(0, 0, 0, 1);
 }
 
 /* Login component */
@@ -168,6 +177,14 @@ html, body, button {
 .art-space-grid {
   width: 35%;
   padding-top: 90px;
+  height: 100vh;
+  overflow: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.art-space-grid::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Edge */
 }
 
 .art-details {
@@ -212,6 +229,10 @@ html, body, button {
 .art-edit-details-holder textarea {
   height: 110px;
   margin-bottom: 0;
+  /* resize: none; /* Prevent manual resizing */
+  /* overflow: hidden;  */
+  width: 100%; /* Optional: Full-width */
+  box-sizing: border-box; /* Include padding and border in width/height */
 }
 
 .art-edit-details-holder input::placeholder, .art-edit-details-holder textarea::placeholder  {
@@ -252,7 +273,7 @@ input[type="file"] {
 }
 
 .list-of-art {
-  height: 100vh;
+  /* height: 100%; */
   overflow-y: scroll;
   scrollbar-width: none;   /* For Firefox: Hide scrollbar */
 }

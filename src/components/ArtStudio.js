@@ -27,7 +27,7 @@ const ArtStudio = () => {
                 <button className="art-studio-logout" onClick={handleLogout}>Exit Studio</button>
             </div>
             <div className="art-details-holder">
-                <h2>Update Artwork</h2>      
+                <h2>Update Art Space {selectedSpaceId}</h2>      
                 {selectedSpaceId ? (
                     <ArtDetails spaceId={selectedSpaceId} />
                 ) : (
@@ -35,7 +35,7 @@ const ArtStudio = () => {
                 )}
             </div>
             <div className="art-space-grid">
-                <h2>Select Artwork</h2>     
+                <h2>Select Art Space</h2>     
                 {/* onSelectSpace is a property (data/functions) passed to this component. The value passed is setSelectedSpaceId (the state updater function) */}
                 <ArtSpacesList onSelectSpace={setSelectedSpaceId} />
             </div>

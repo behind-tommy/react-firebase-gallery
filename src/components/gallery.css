@@ -1,0 +1,292 @@
+#gallery { 
+    width: 100vw; 
+    height: 100vh; 
+}
+
+/* Full-screen overlay */
+#welcomeOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 1s ease; /* Smooth fade-out */
+    z-index: 1000; /* Ensure overlay is above other elements */
+}
+
+/* Centered welcome text */
+#welcomeText {
+    font-size: 2em;
+    font-weight: 300;
+    color: gray;
+    opacity: 0; /* Start invisible */
+    animation: fadeInText 1s forwards 0.5s; /* Fade in after 0.5s delay */
+    padding: 30px;
+    text-align: center;
+}
+
+/* Keyframe for text fade-in */
+@keyframes fadeInText {
+    to {
+        opacity: 1;
+    }
+}
+
+
+#main-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+#gallery-container {
+    width: 66.67%; /* Left two-thirds of the screen */
+    height: 100vh;
+}
+
+#gallery {
+    width: 100%;
+    height: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: flex;
+}
+
+#chat-overlay {
+    position: fixed;
+    position: fixed;
+    top: 5%;
+    right: 5%;
+    width: 430px; /* Right third of the screen */
+    height: 90%;
+    background-color: #fff; /* Optional: background color for the chat */
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    box-sizing: border-box;
+    /* font-family: 'Courier New', monospace; */
+}
+
+#chat-overlay.visible {
+    display: block;
+}
+
+#chat-overlay.hidden {
+    display: none;
+}
+
+#chat-title-section {
+    margin-bottom: 20px;
+    padding: 35px 35px 0 35px;
+}
+
+#chat-close-btn {
+    position: absolute;
+    right: 4%;
+    top: 4%;
+    opacity: 50%;
+    width: 20px;
+    padding: 10px;
+}
+
+#chat-visitor-pp {
+    display: inline-block;
+    width: 80px;
+}
+
+#chat-visitor-info {
+    display: inline-block;
+    margin-left: 20px;
+    position: relative;
+    bottom: 15px;
+}
+
+#chat-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    display: block;
+}
+
+#chat-subtitle {
+    font-size: 1em;
+    opacity: 70%;
+    display: block;
+}
+
+#chat-content {
+    height: 69%;
+    padding: 0 35px;
+    /* border-bottom: 1px solid #d7d7d7; */
+}
+
+#chat-messages {
+    height: 100%;
+    overflow: scroll;
+}
+
+.chat-message {
+    background: #4f455e;
+    min-width: 40%;
+    max-width: 70%;
+    color: #ffffff;
+    padding: 15px 20px;
+    margin: 10px 0;
+    font-size: 1em;
+    border-radius: 24px;
+}
+
+.visitor-message {
+    float: left;
+}
+
+.user-message {
+    float: right;
+}
+
+#chat-input {
+    display: block;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+}
+
+#user-chat-input {
+    display: block;
+    padding: 20px;
+    position: absolute;
+    bottom: 0;
+    width: 390px;
+    border: none;
+    border-radius: 0 0 10px 10px;
+}
+
+#user-chat-input:focus {
+    border: none;
+    outline: none;
+}
+
+#artwork-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none; /* Default state is hidden */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
+
+#artwork-overlay.visible {
+    display: flex; /* Flex to center content */
+    opacity: 1;
+}
+
+#artwork-overlay.hidden {
+    display: none;
+    opacity: 0;
+}
+
+/* Typing indicator */
+
+#typing-indicator {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    margin: 0 2px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    animation: bounce 0.3s infinite alternate;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-5px);
+    }
+}
+
+/* Joystick */
+
+#joystick-container {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 100px;
+    height: 100px;
+    z-index: 1000;
+    touch-action: none;
+    opacity: 0; /* Start invisible */
+    transition: opacity 0.5s ease; /* Smooth fade-in */
+}
+
+#joystick-base {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+}
+
+#joystick-handle {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    top: 25%;
+    left: 25%;
+    transform: translate(-50%, -50%);
+}
+
+/* Mobile */
+
+@media only screen and (max-width: 1024px) {
+
+    #joystick-container {
+        display: block;
+    }
+
+    #chat-overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #fff;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    #chat-content {
+        height: 73%;
+    }
+}

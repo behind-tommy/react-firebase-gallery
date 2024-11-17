@@ -1,4 +1,3 @@
-
 import './App.css';
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -6,6 +5,7 @@ import { auth } from './firebase';
 import SignUp from './components/SignUp';
 import Login from './components/Login';
 import ArtStudio from './components/ArtStudio';
+import Gallery from './components/Gallery';
 
 function App() {
   // sets state for where a user is logged in or not
@@ -63,11 +63,12 @@ function App() {
         )}
 
         {view === 'gallery' && (
-            <div className="entrance-holder">
-                <button className="small-header back-button" onClick={ () => setView('welcome') }>&#8592;  BACK</button>
-                <h2>Gallery Coming Soon...</h2>
-                {/* Placeholder for Three.js scene */}
-            </div>
+            <Gallery />
+            // <div className="entrance-holder">
+            //     <button className="small-header back-button" onClick={ () => setView('welcome') }>&#8592;  BACK</button>
+            //     <h2>Gallery Coming Soon...</h2>
+            //     {/* Placeholder for Three.js scene */}
+            // </div>
         )}
     </div>
   );

@@ -54,6 +54,7 @@ const ArtEditDetails = ({ spaceId }) => {
             />
             <label className='art-studio-label'>Art Description</label>
             <textarea
+                id="art-desc-textarea"
                 placeholder="Art Description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
