@@ -1,38 +1,277 @@
-.App {
-  text-align: center;
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+
+html, body, button {
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* app component */
+.entrance-holder {
+  display: flex;            /* Enable flexbox */
+  flex-direction: column;   /* Stack items vertically */
+  align-items: flex-start;  /* Align all child elements (span + buttons) to the left */
+  justify-content: center;  /* Center the container vertically in the viewport */
+  height: 100vh;            /* Full viewport height */
+  padding: 0 2rem;          /* Add horizontal padding to create space from the viewport edge */
+  box-sizing: border-box;   /* Ensure padding is included in the total width */
+  max-width: 70%;         /* Optional: Restrict the maximum width of the container */
+  margin: auto;             /* Center the container horizontally */
+  animation: fadeInMove 0.4s ease-out forwards; /* Trigger fade-in animation */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+@keyframes fadeInMove {
+  0% {
+    opacity: 0;              /* Start fully transparent */
+    transform: translateX(-30px); /* Start slightly off-screen to the left */
+  }
+  100% {
+    opacity: 1;              /* Fully visible */
+    transform: translateX(0); /* Settle in the final position */
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Welcome component */
+
+.small-header {
+  margin-bottom: 1rem;      /* Add spacing below the header */
+  color: rgba(0, 0, 0, 0.5);   
+  font-weight: 700;
+  font-size: 1.1em;
+  letter-spacing: 0.15em;
+}
+
+.entrance-holder .back-button {
+  border: none;
+  background: none;
+  background-color: transparent;
+  box-shadow: none;
+  outline: none;
+  padding: 0px;
+  display: block;
+  margin-bottom: 1rem;      /* Add spacing below the header */
+  color: rgba(0, 0, 0, 0.5);   
+  font-weight: 700;
+  font-size: 1.1em;
+  letter-spacing: 0.15em;
+}
+
+.welcome-options button {
+  border: none;
+  background: none;
+  background-color: transparent;
+  box-shadow: none;
+  outline: none;
+  padding: 0px;
+  display: block;
+  font-size: 6em;
+  text-align: left;
+  font-family: "Lexend", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease, transform 0.3s ease; /* Move the button gently rightward */
+}
+
+.welcome-options button:hover {
+  transform: translateX(10px); /* Move the button gently rightward */
+}
+
+/* Login component */
+
+.login-form-holder form input {
+  display: block;
+  border: none;
+  background: none;
+  background-color: transparent;
+  box-shadow: none;
+  outline: none;
+  padding: 0px;
+  margin: 15px 0 15px -5px;
+  font-size: 3em;
+  text-align: left;
+  font-family: "Lexend", sans-serif;
+  font-weight: 500;
+}
+
+.login-form-holder form input::placeholder {
+  color: rgb(0, 0, 0, 0.25);
+}
+
+.login-form-holder form button, .art-edit-details-holder button {
+  background: #4f455e;
+  color: #fff;
+  padding: 20px;
+  width: 100%;
+  font-size: 1em;
+  border: none;
+  border-radius: 3px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  margin-top: 50px;
+  transition: all 0.15s ease, transform 0.3s ease; /* Move the button gently rightward */
 }
 
-.App-link {
-  color: #61dafb;
+.login-form-holder form button:hover, .art-edit-details-holder button:hover {
+  background: #3b3346;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Art studio */
+
+.header-nav {
+  position: fixed;
+  z-index: 1;
+  top: 0px;
+  left: 0px;
+  height: 60px;
+  width: 100%;
+  /* display: flex; */
+  background: white;
+  border-bottom: 1px solid #d7d7d7;
+  display: flex;             /* Use flexbox for alignment */
+  justify-content: space-between; /* Distribute children to opposite ends (left and right) */
+  align-items: center;       /* Vertically align children */
+}
+
+.art-studio-header-name {
+  margin-left: 30px;
+  font-weight: 700;
+}
+
+.art-studio-logout {
+  align-self: center;        /* Center this child vertically */
+  margin-left: auto;         /* Ensure it is flushed to the right */
+  margin-right: 30px;
+  padding: 8px 20px;
+  border: 1px solid #d7d7d7;
+  color: rgb(0, 0, 0, 0.7);
+}
+
+.art-studio-holder {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.art-studio-holder h2 {
+  font-weight: 400;
+  margin-bottom: 40px;
+  font-size: 1.5em;
+}
+
+.art-details-holder {
+  width: 65%;
+  margin-right: 85px;
+  padding-top: 90px;
+  border-right: 1px solid #d7d7d780;
+}
+
+.art-space-grid {
+  width: 35%;
+  padding-top: 90px;
+}
+
+.art-details {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;  /* Align child divs at the top */
+}
+
+/* Mobile view: Stack the divs vertically */
+@media (max-width: 768px) { /* Adjust this width for your desired breakpoint */
+  .art-details, .art-studio-holder {
+    flex-direction: column; /* Switch to vertical stacking */
   }
-  to {
-    transform: rotate(360deg);
+
+  .art-details-holder, .art-space-grid {
+    width: 100%;
   }
+  
+}
+
+.art-edit-details-holder {
+  width: 50%;
+  flex-direction: column;
+  display: flex;
+}
+
+.art-edit-details-holder input, .art-edit-details-holder textarea {
+  margin-bottom: 42px;
+  display: block;
+  border: none;
+  background: none;
+  background-color: transparent;
+  box-shadow: none;
+  outline: none;
+  padding: 0px;
+  font-size: 1em;
+  text-align: left;
+  font-family: "Lexend", sans-serif;
+  font-weight: 500;
+}
+
+.art-edit-details-holder textarea {
+  height: 110px;
+  margin-bottom: 0;
+}
+
+.art-edit-details-holder input::placeholder, .art-edit-details-holder textarea::placeholder  {
+  color: rgb(0, 0, 0, 0.25);
+}
+
+.art-edit-details-holder label, .art-studio-label {
+  margin-bottom: 10px;
+  color: rgb(0, 0, 0, 0.5);
+  font-weight: 600;
+  display: block;
+}
+
+.art-upload-holder .art-studio-label {
+  padding-left: 10px;
+  margin-top: 15px;
+  display: block;
+  margin-bottom: 0;
+}
+
+
+.art-upload-holder {
+  width: 34.5%;
+  margin: 0 55px 0 0;
+}
+
+.art-upload-holder img {
+  width: 100%;                /* Fill the square width */
+  height: 100%;               /* Fill the square height */
+  object-fit: cover;          /* Maintain aspect ratio and fill the square */
+  object-position: center;    /* Center the image */
+  border: 1px solid #d7d7d7;
+  border-radius: 4px;
+}
+
+input[type="file"] {
+  padding: 10px;
+}
+
+.list-of-art {
+  height: 100vh;
+  overflow-y: scroll;
+  scrollbar-width: none;   /* For Firefox: Hide scrollbar */
+}
+
+.list-of-art::-webkit-scrollbar {
+  display: none;           /* For Chrome, Safari, and Edge: Hide scrollbar */
+}
+
+.artwork-tile {
+  width: 100px;
+  height: 100px;
+  background-color: #d7d7d7;
+  margin: 5px;
+  display: inline-block;
+}
+
+.artwork-tile img {
+  width: 100%;                /* Fill the square width */
+  height: 100%;               /* Fill the square height */
+  object-fit: cover;          /* Maintain aspect ratio and fill the square */
+  object-position: center;    /* Center the image */
 }
