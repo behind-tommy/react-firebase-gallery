@@ -20,7 +20,7 @@ const ArtUpload = ({ spaceId }) => {
             try {
                 // Creates a reference to the file with space ID = current spaceId (from the art/{spaceId} directory in Firebase Storage)
                 // This is an object with key-values
-                const artRef = ref(storage, `art/${spaceId}`);
+                const artRef = ref(storage, `art/${spaceId}.jpg`);
                 // Get the file URL and store it in url
                 const url = await getDownloadURL(artRef);
                 // Update the state of artURL to the current art file
@@ -40,6 +40,12 @@ const ArtUpload = ({ spaceId }) => {
     const handleFileChange = async (e) => {
         // Retrieves the first selected file from the file input.
         const file = e.target.files[0];
+
+        // If no file is selected, do nothing and return
+        if (!file) {
+            console.log('No file selected');
+            return;
+        }
 
         // Ensure the file has a .jpg extension when saved
         const fileName = `${spaceId}.jpg`; // Add the extension

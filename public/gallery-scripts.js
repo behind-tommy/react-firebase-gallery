@@ -70,37 +70,56 @@ const galleryDepth = 35;
 // Create a texture loader
 const textureLoader = new THREE.TextureLoader();
 
-// Load each texture from your file paths
-const woodTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_Color.jpg');           // Base color texture
-const woodNormalTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_NormalGL.jpg');    // Normal map
-const woodAOTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_AmbientOcclusion.jpg');            // Ambient Occlusion map
-const woodRoughnessTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_Roughness.jpg'); // Roughness map
+// // Load each texture from your file paths
+// const woodTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_Color.jpg');           // Base color texture
+// const woodNormalTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_NormalGL.jpg');    // Normal map
+// const woodAOTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_AmbientOcclusion.jpg');            // Ambient Occlusion map
+// const woodRoughnessTexture = textureLoader.load('/models/textures/gallery/WoodFloor039_1K-JPG_Roughness.jpg'); // Roughness map
+
+const marbleTexture = textureLoader.load('/models/textures/gallery/Marble019_1K-JPG_Color.jpg');           // Base color texture
+const marbleNormalTexture = textureLoader.load('/models/textures/gallery/Marble019_1K-JPG_NormalGL.jpg');    // Normal map
+const marbleRoughnessTexture = textureLoader.load('/models/textures/gallery/Marble019_1K-JPG_Roughness.jpg'); // Roughness map
+
+
+// // Set texture wrapping and repeat as needed
+// woodTexture.wrapS = THREE.RepeatWrapping;
+// woodTexture.wrapT = THREE.RepeatWrapping;
+// woodNormalTexture.wrapS = THREE.RepeatWrapping;
+// woodNormalTexture.wrapT = THREE.RepeatWrapping;
+// woodAOTexture.wrapS = THREE.RepeatWrapping;
+// woodAOTexture.wrapT = THREE.RepeatWrapping;
+// woodRoughnessTexture.wrapS = THREE.RepeatWrapping;
+// woodRoughnessTexture.wrapT = THREE.RepeatWrapping;
 
 // Set texture wrapping and repeat as needed
-woodTexture.wrapS = THREE.RepeatWrapping;
-woodTexture.wrapT = THREE.RepeatWrapping;
-woodNormalTexture.wrapS = THREE.RepeatWrapping;
-woodNormalTexture.wrapT = THREE.RepeatWrapping;
-woodAOTexture.wrapS = THREE.RepeatWrapping;
-woodAOTexture.wrapT = THREE.RepeatWrapping;
-woodRoughnessTexture.wrapS = THREE.RepeatWrapping;
-woodRoughnessTexture.wrapT = THREE.RepeatWrapping;
+marbleTexture.wrapS = THREE.RepeatWrapping;
+marbleTexture.wrapT = THREE.RepeatWrapping;
+marbleNormalTexture.wrapS = THREE.RepeatWrapping;
+marbleNormalTexture.wrapT = THREE.RepeatWrapping;
+marbleRoughnessTexture.wrapS = THREE.RepeatWrapping;
+marbleRoughnessTexture.wrapT = THREE.RepeatWrapping;
 
 // -------------- Create Floor -------------- //
 
 
+// // Scale the textures to match the floor dimensions if needed
+// woodTexture.repeat.set(10, 10);         // Repeat the texture to fit the floor
+// woodNormalTexture.repeat.set(10, 10);
+// woodAOTexture.repeat.set(10, 10);
+// woodRoughnessTexture.repeat.set(10, 10);
+
 // Scale the textures to match the floor dimensions if needed
-woodTexture.repeat.set(10, 10);         // Repeat the texture to fit the floor
-woodNormalTexture.repeat.set(10, 10);
-woodAOTexture.repeat.set(10, 10);
-woodRoughnessTexture.repeat.set(10, 10);
+marbleTexture.repeat.set(10, 10);         // Repeat the texture to fit the floor
+marbleNormalTexture.repeat.set(10, 10);
+marbleRoughnessTexture.repeat.set(10, 10);
+
 
 // Create floor material
 const floorMaterial = new THREE.MeshStandardMaterial({
-    map: woodTexture,               // Base color map
-    normalMap: woodNormalTexture,    // Adds surface detail
-    aoMap: woodAOTexture,            // Ambient occlusion for added depth
-    roughnessMap: woodRoughnessTexture, // Controls roughness/shininess
+    map: marbleTexture,               // Base color map
+    normalMap: marbleNormalTexture,    // Adds surface detail
+    // aoMap: woodAOTexture,            // Ambient occlusion for added depth
+    roughnessMap: marbleRoughnessTexture, // Controls roughness/shininess
     roughness: 1                      // Adjust this value to control glossiness
 });
 
