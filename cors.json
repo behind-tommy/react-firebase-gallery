@@ -1,6 +1,6 @@
 [
     {
-      "origin": ["*"],
+      "origin": ["*", "https://ai-gallery-55b8b.web.app", "http://localhost:3000"],
       "method": ["GET", "HEAD", "OPTIONS"],
       "responseHeader": ["Content-Type"],
       "maxAgeSeconds": 3600
