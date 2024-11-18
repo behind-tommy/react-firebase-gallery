@@ -84,7 +84,7 @@ exports.getImageProxy = functions.https.onRequest((req, res) => {
       // Fetch metadata to determine Content-Type
       const [metadata] = await file.getMetadata();
       const contentType = metadata.contentType || 'image/jpeg';
-      console.log(metadata.contentType)
+      console.log(metadata.contentType);
 
       // Set headers
       res.setHeader('Content-Type', contentType);

@@ -68,6 +68,16 @@ function Gallery() {
                 <textarea id="user-chat-input" placeholder="Type your message and hit enter"></textarea>
             </div>
         </div>
+
+        { /* <!-- Artwork Desc Overlay --> */ }
+        <div id="artwork-desc-overlay" className="hidden">
+            <div className="overlay-content">
+                <img id="artwork-desc-close-btn" src="./img/close.svg" />
+                <h2 id="artwork-title"></h2>
+                <p id="artist-name">Shimin</p>
+                <p id="artwork-description"></p>
+            </div>
+        </div>
         
     </div>
   );

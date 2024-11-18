@@ -55,15 +55,93 @@
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .visible {
     display: flex;
 }
 
-#chat-overlay {
+/* Art desc overlay */
+
+#artwork-desc-overlay {
     position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.2s ease; /* Smooth transition for browsers without animation support */
+}
+
+#artwork-desc-overlay:not(.hidden) {
+    display: flex; /* Change to your desired display property */
+    animation: fadeInUp 0.2s ease forwards; /* Trigger animation when not hidden */
+}
+
+#artwork-desc-overlay.hidden {
+    animation: fadeOutDown 0.2s ease forwards; /* Animate out when hidden */
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOutDown {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+}
+
+.overlay-content {
+    background: white;
+    padding: 50px;
+    border-radius: 10px;
+    max-width: 500px;
+    text-align: left;
+    position: absolute;
+    right: 5%;
+    box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+#artwork-title {
+    margin-bottom: 0;
+}
+
+#artist-name {
+    font-style: italic;
+    margin-top: 0;
+    margin-bottom: 30px;
+}
+
+#artwork-desc-close-btn {
+    position: absolute;
+    right: 4%;
+    top: 4%;
+    opacity: 50%;
+    width: 20px;
+    padding: 10px;
+}
+
+
+/* Chat overlay */
+
+#chat-overlay {
     position: fixed;
     top: 5%;
     right: 5%;
@@ -74,7 +152,7 @@
     flex-direction: column;
     border-radius: 10px;
     box-sizing: border-box;
-    /* font-family: 'Courier New', monospace; */
+    box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.1);
 }
 
 #chat-overlay.visible {
@@ -168,35 +246,13 @@
     width: 390px;
     border: none;
     border-radius: 0 0 10px 10px;
+    font-family: 'Nunito';
+    font-size: 1em;
 }
 
 #user-chat-input:focus {
     border: none;
     outline: none;
-}
-
-#artwork-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: none; /* Default state is hidden */
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    transition: opacity 0.5s ease;
-}
-
-#artwork-overlay.visible {
-    display: flex; /* Flex to center content */
-    opacity: 1;
-}
-
-#artwork-overlay.hidden {
-    display: none;
-    opacity: 0;
 }
 
 /* Typing indicator */

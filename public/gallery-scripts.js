@@ -438,10 +438,20 @@ scene.add(cornerLight4);
 
 // ---------------------------------------- Section: Artwork ---------------------------------------- //
 
-// Function to create framed artwork
+// Store framed artwork & art cards
 const framedArtworks = {};
+const artCards = [];
 
-async function createFramedArtwork(id, frameDepth, position, rotation, height = 1.5) {
+
+// Function to create framed artwork & art description card
+async function createFramedArtwork(
+    id,
+    frameDepth,
+    position,
+    rotation,
+    height = 1.5,
+    facing = "front"
+) {
     const docRef = doc(db, "spaces", id); // Assume 'artworks' collection stores data
     const docSnap = await getDoc(docRef);
 
@@ -454,22 +464,31 @@ async function createFramedArtwork(id, frameDepth, position, rotation, height = 
         textureLoader.load(imageURL, (texture) => {
             // Calculate the aspect ratio of the image
             const aspectRatio = texture.image.width / texture.image.height;
-            
+
             // Define base height or width and adjust the other dimension to keep the aspect ratio
             const baseHeight = height; // Set a base height for all artworks (adjust as desired)
             const artworkHeight = baseHeight;
             const artworkWidth = artworkHeight * aspectRatio;
-            
+
             // Create PlaneGeometry for the artwork with correct dimensions
-            const artworkGeometry = new THREE.PlaneGeometry(artworkWidth, artworkHeight);
+            const artworkGeometry = new THREE.PlaneGeometry(
+                artworkWidth,
+                artworkHeight
+            );
             const artworkMaterial = new THREE.MeshBasicMaterial({ map: texture });
             const artworkMesh = new THREE.Mesh(artworkGeometry, artworkMaterial);
 
             // Create a frame geometry around the artwork
             const frameWidth = artworkWidth + frameDepth;
             const frameHeight = artworkHeight + frameDepth;
-            const frameGeometry = new THREE.BoxGeometry(frameWidth, frameHeight, frameDepth);
-            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff }); // Brown color for the frame
+            const frameGeometry = new THREE.BoxGeometry(
+                frameWidth,
+                frameHeight,
+                frameDepth
+            );
+            const frameMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+            }); // Frame color
             const frameMesh = new THREE.Mesh(frameGeometry, frameMaterial);
 
             // Position the artwork slightly in front of the frame
@@ -491,19 +510,90 @@ async function createFramedArtwork(id, frameDepth, position, rotation, height = 
 
             // Store the framed artwork in the array
             framedArtworks[id] = framedArtwork;
+
+            // Add the description card with texture
+            const cardWidth = 0.22; // Width of the description card
+            const cardHeight = 0.15; // Height of the description card
+            const gap = 0.1; // Gap between the artwork and the description card
+
+            const cardTextureURL = "./models/textures/gallery/artcard.jpg"; // Replace with your card texture URL
+            textureLoader.load(cardTextureURL, (cardTexture) => {
+                const cardMaterial = new THREE.MeshBasicMaterial({
+                    map: cardTexture,
+                });
+                const cardGeometry = new THREE.BoxGeometry(
+                    cardWidth,
+                    cardHeight,
+                    0.02
+                );
+                const cardMesh = new THREE.Mesh(cardGeometry, cardMaterial);
+
+                // Rotate art card
+                cardMesh.rotation.set(rotation.x, rotation.y, rotation.z);
+
+                // Position the card dynamically based on artwork facing direction
+                switch (facing) {
+                    case "front":
+                        cardMesh.position.set(
+                            position.x + artworkWidth / 2 + gap + cardWidth / 2,
+                            1.3, // Align with artwork vertically
+                            position.z // Depth remains the same
+                        );
+                        break;
+
+                    case "back":
+                        cardMesh.position.set(
+                            position.x - (artworkWidth / 2 + gap + cardWidth / 2),
+                            1.3,
+                            position.z
+                        );
+                        break;
+
+                    case "left":
+                        cardMesh.position.set(
+                            position.x,
+                            1.3,
+                            position.z + artworkWidth / 2 + gap + cardWidth / 2
+                        );
+                        break;
+
+                    case "right":
+                        cardMesh.position.set(
+                            position.x,
+                            1.3,
+                            position.z - (artworkWidth / 2 + gap + cardWidth / 2)
+                        );
+                        break;
+
+                    default:
+                        console.warn(`Unknown facing direction: ${facing}`);
+                }
+
+                // Store an art space ID (for referencing firebase data) for this artcard object
+                cardMesh.userData = { isArtCard: true, artworkId: id}
+
+                // Add the card to the scene
+                scene.add(cardMesh);
+
+                // Add card to ArtCards array
+                artCards.push(cardMesh);
+            });
+
         });
     } else {
         console.error("No such document in Firestore for ID:", id);
     }
 }
 
+
 // Left inner block 1 front
 createFramedArtwork(
     '1',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730628909/beeb1_mj4scm.jpg', // Replace with your image URL
     0.05, // Frame depth
     { x: -7, y: 1.5, z: blockDepth + 6.8 }, // Position on the wall
-    { x: 0, y: 0, z: 0 } // Rotation
+    { x: 0, y: 0, z: 0 },
+    1.5,
+    'front'
 );
 
 // Left inner block 1 back
@@ -512,7 +602,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629010/beeb2_gm9gka.jpg', // Replace with your image URL
     0.05, // Frame depth
     { x: -7, y: 1.5, z: 6.7 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 } // Rotation
+    { x: 0, y: Math.PI, z: 0 },
+    1.5,
+    'back'
 );
 
 // Left inner block 2
@@ -521,7 +613,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629012/bunny_kfwbzn.jpg', // Replace with your image URL
     0.05, // Frame depth
     { x: -7, y: 1.5, z: blockDepth - 0.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 } // Rotation
+    { x: 0, y: 0, z: 0 },
+    1.5,
+    'front'
 );
 
 // Left inner block 2 back
@@ -530,7 +624,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164126/Galaxy_gynx7g_1_wxnepf.jpg',
     0.05, // Frame depth
     { x: -7, y: 1.5, z: -0.3 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 } // Rotation
+    { x: 0, y: Math.PI, z: 0 },
+    1.5,
+    'back'
 );
 
 // Left inner block 3
@@ -540,7 +636,8 @@ createFramedArtwork(
     0.05, // Frame depth
     { x: -7, y: 1.5, z: blockDepth - 7.2 }, // Position on the wall
     { x: 0, y: 0, z: 0 }, // Rotation
-    2.5
+    2.5,
+    'front'
 );
 
 // Left inner block 3 back
@@ -550,7 +647,8 @@ createFramedArtwork(
     0.05, // Frame depth
     { x: -7, y: 1.5, z: -7.3 }, // Position on the wall
     { x: 0, y: Math.PI, z: 0 }, // Rotation
-    2.5
+    2.5,
+    'back'
 );
 
 // Right inner block 1 front
@@ -559,7 +657,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164123/Wolf_Flowers_i0ugzp_1_p2i0ms.jpg', // Replace with your image URL
     0.05, // Frame depth
     { x: 7, y: 1.5, z: blockDepth + 6.8 }, // Position on the wall
-    { x: 0, y: 0, z: 0 } // Rotation
+    { x: 0, y: 0, z: 0 },
+    1.5,
+    'front'
 );
 
 // Right inner block 1 back
@@ -568,7 +668,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629011/beeb5_tzqowu.jpg', // Replace with your image URL
     0.05, // Frame depth
     { x: 7, y: 1.5, z: 6.7 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 } // Rotation
+    { x: 0, y: Math.PI, z: 0 },
+    1.5,
+    'back'
 );
 
 // Right inner block 2
@@ -577,7 +679,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629013/beeb8_wzbs73.jpg',
     0.05, // Frame depth
     { x: 7, y: 1.5, z: blockDepth - 0.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 } // Rotation
+    { x: 0, y: 0, z: 0 },
+    1.5,
+    'front'
 );
 
 // Right inner block 2 back
@@ -586,7 +690,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164116/bobby2_q2jy1t_drcolt.jpg',
     0.05, // Frame depth
     { x: 7, y: 1.5, z: -0.3 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 } // Rotation
+    { x: 0, y: Math.PI, z: 0 },
+    1.5,
+    'back'
 );
 
 // Right inner block 3
@@ -595,7 +701,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164117/Carrot_Rabbit_zo38g0_1_phaoap.jpg', // Replace with your image URL
     0.05, // Frame depth
     { x: 7, y: 1.5, z: blockDepth - 7.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 } // Rotation
+    { x: 0, y: 0, z: 0 },
+    1.5,
+    'front'
 );
 
 // Right inner block 3 back
@@ -605,7 +713,8 @@ createFramedArtwork(
     0.05, // Frame depth
     { x: 7, y: 1.5, z: -7.3 }, // Position on the wall
     { x: 0, y: Math.PI, z: 0 }, // Rotation
-    2.5
+    2.5,
+    'back'
 );
 
 // Left wall
@@ -615,7 +724,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164110/Pollen_Count_m7nvpf_1_jfhtws.jpg',
     0.05, // Frame depth
     { x: -14.7, y: 1.5, z: 7.5 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: Math.PI/2, z: 0 },
+    1.5,
+    'right'
 );
 
 createFramedArtwork(
@@ -623,7 +734,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164120/sticks_hbcvvz_1_pxfntt.jpg',
     0.05, // Frame depth
     { x: -14.7, y: 1.5, z: 3 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: Math.PI/2, z: 0 },
+    1.5,
+    'right'
 );
 
 createFramedArtwork(
@@ -631,7 +744,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164110/stork_c6zszs_1_f3mbf5.jpg',
     0.05, // Frame depth
     { x: -14.7, y: 1.5, z: -1.5 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: Math.PI/2, z: 0 },
+    1.5,
+    'right'
 );
 
 createFramedArtwork(
@@ -639,7 +754,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164118/river_durh8e_1_o5zyr2.jpg',
     0.05, // Frame depth
     { x: -14.7, y: 1.5, z: -6 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: Math.PI/2, z: 0 },
+    1.5,
+    'right'
 );
 
 createFramedArtwork(
@@ -647,7 +764,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164107/Milking_Cows_lzvfm8_1_ruwn2w.jpg',
     0.05, // Frame depth
     { x: -14.7, y: 1.5, z: -12 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: Math.PI/2, z: 0 },
+    1.5,
+    'right'
 );
 
 // Right wall
@@ -657,7 +776,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164121/The_Art_Of_The_Duck_wskvvm_1_eldxuj.jpg',
     0.05, // Frame depth
     { x: 14.7, y: 1.5, z: 7.5 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: -Math.PI/2, z: 0 },
+    1.5,
+    'left'
 );
 
 createFramedArtwork(
@@ -665,7 +786,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164124/Dripping_Red_nmqi0e_1_uhyrjx.jpg',
     0.05, // Frame depth
     { x: 14.7, y: 1.5, z: 3 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: -Math.PI/2, z: 0 },
+    1.5,
+    'left'
 );
 
 createFramedArtwork(
@@ -673,7 +796,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164112/Sunflower_Hammy_chyxpe_1_qyevxj.jpg',
     0.05, // Frame depth
     { x: 14.7, y: 1.5, z: -1.5 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: -Math.PI/2, z: 0 },
+    1.5,
+    'left'
 );
 
 createFramedArtwork(
@@ -681,7 +806,9 @@ createFramedArtwork(
     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164109/Mother_Of_Cats_xzku8x_1_gu5hyr.jpg',
     0.05, // Frame depth
     { x: 14.7, y: 1.5, z: -6 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 } // Rotation
+    { x: 0, y: -Math.PI/2, z: 0 },
+    1.5,
+    'left'
 );
 
 createFramedArtwork(
@@ -691,6 +818,7 @@ createFramedArtwork(
     { x: 14.7, y: 1.5, z: -12 }, // Position on the wall
     { x: 0, y: -Math.PI/2, z: 0 }, // Rotation
     0.4,
+    'left'
 );
 
 // Far wall
@@ -702,7 +830,8 @@ createFramedArtwork(
     0.05, // Frame depth
     { x: 0, y: 2.9, z: -17.2 }, // Position on the wall
     { x: 0, y: 0, z: 0 }, // Rotation
-    4.8
+    4.8,
+    'front'
 );
 
 // Near back wall
@@ -714,7 +843,8 @@ createFramedArtwork(
     0.05, // Frame depth
     { x: 0, y: 2.8, z: 17.2 }, // Position on the wall
     { x: 0, y: Math.PI, z: 0 }, // Rotation
-    4.2
+    4.2,
+    'back'
 );
 
 // ---------------------------------------- Section: View control with mouse movement ---------------------------------------- //
@@ -1019,10 +1149,13 @@ function getTopLevelVisitor(object) {
     return object;
 }
 
+ // Flag to block onPointerClick temporarily so that clicking close-btn doesn't retrigger opening the overlay - true when chatoverlay and artoverlay are open
+let interactionBlocked = false;
+
 // On pointer click, trigger a whole load of stuff
 function onPointerClick(event) {
 
-    if (chatOpen || overlayOpen) return; // Prevent any action if chat or artwork overlay is open
+    if (chatOpen || interactionBlocked) return; // Prevent any action if chat or artwork overlay is open
 
     const maxDistance = 7; // Set the max distance for raycasting (e.g., 5 units)
     
@@ -1030,12 +1163,10 @@ function onPointerClick(event) {
     raycaster.setFromCamera({ x: 0, y: 0 }, camera);
 
     // Check for intersections with visitors first, within max raycasting distance
-    // const visitorIntersections = raycaster.intersectObjects(visitors, true); // 'true' checks nested objects in groups
     const visitorIntersections = raycaster.intersectObjects(visitors, true).filter(intersect => intersect.distance <= maxDistance);
 
-
     if (visitorIntersections.length > 0) {
-        console.log("found marshal");
+        console.log("found visitor");
         const clickedObject = visitorIntersections[0].object;
         const clickedVisitor = getTopLevelVisitor(clickedObject);
         console.log(clickedVisitor);
@@ -1048,8 +1179,16 @@ function onPointerClick(event) {
             return; // Exit early to avoid checking for artwork interactions
         }
     }
+    // Check for intersections with art desc cards
+    const artCardIntersections = raycaster.intersectObjects(artCards, true).filter(intersect => intersect.distance <= maxDistance);
+    // If intersect, call the open art desc overlay func, passing in the artworkId
+    if (artCardIntersections.length > 0) {
+        console.log(artCardIntersections[0].object.userData.artworkId);
+        showArtworkDescOverlay(artCardIntersections[0].object.userData.artworkId);
+        return;
+    }
 
-    // If no visitors clicked, check for intersections with artwork
+    // Check for intersections with artwork
 
     // Convert framedArtworks object to an array for raycasting
     const framedArtworksArray = Object.values(framedArtworks);
@@ -1065,26 +1204,63 @@ function onPointerClick(event) {
             focusOnArtwork(targetArtwork);
             currentFocusedArtwork = targetArtwork;
             isFocused = true;
-            console.log(isFocused);
-            console.log(currentFocusedArtwork);
-        } else if (isFocused && !overlayOpen) {
-            console.log(isFocused);
-            console.log(currentFocusedArtwork);
-            // If already in focus, open the overlay
-            // showArtworkOverlay({
-            //     title: "Beautiful Artwork", // Replace with actual dynamic data
-            //     artist: "Jane Doe",
-            //     date: "2023-05-14",
-            //     description: "This is a description of the beautiful artwork.",
-            //     imageURL: "/img/sky.jpg"
-            // });
-            // console.log("Overlay open sesame");
-        }
+            return;
+        } 
     }
 
-    // console.log(isFocused);
-    // console.log(overlayOpen);
-    // console.log(currentFocusedArtwork);
+    
+}
+
+// Function to open Art desc overlay
+async function showArtworkDescOverlay(artworkId) {
+    try {
+        // get a reference to the doc on firestore
+        const docRef = doc(db, "spaces", artworkId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            // get a reference to the document's data
+            const artworkData = docSnap.data();
+
+            // Populate overlay with title and description from the data pulled
+            document.getElementById("artwork-title").innerText = artworkData.title;
+            document.getElementById("artwork-description").innerText = artworkData.description;
+
+            // Show overlay
+            const artworkDescOverlay = document.getElementById("artwork-desc-overlay");
+            artworkDescOverlay.classList.remove("hidden");
+
+            // Unlock controls and disable movement
+            controls.unlock();
+            disableMovement();
+        } else {
+            console.error("No such document!");
+        }
+    } catch (error) {
+        console.error("Error fetching artwork data:", error);
+    }
+}
+
+// close art desc overlay
+function closeArtworkDescOverlay() {
+    const artworkDescOverlay = document.getElementById("artwork-desc-overlay");
+    console.log("Closing art overlay...");
+    artworkDescOverlay.classList.add("hidden");
+
+    // Block interactions temporarily so that clicking close doesn't retrigger opening the overlay again
+    interactionBlocked = true;
+    setTimeout(() => {
+        interactionBlocked = false; // Unblock interactions after 500ms
+    }, 500);
+
+    // Relock pointer controls and re-enable movement
+    if (!controls.isLocked) {
+        try {
+            controls.lock();
+        } catch (error) {
+            console.error("Failed to lock pointer controls:", error);
+        }
+    }
 }
 
 // Function to Smoothly Focus on Artwork
@@ -1125,47 +1301,6 @@ function disableMovement() {
     moveRight = false;
 }
 
-// Show Artwork Overlay
-function showArtworkOverlay(artworkData) {
-    if (overlayOpen) return; // Avoid opening multiple overlays
-
-    // Populate overlay with artwork data
-    document.getElementById("artwork-title").innerText = artworkData.title;
-    document.getElementById("artwork-artist").innerText = `Artist: ${artworkData.artist}`;
-    document.getElementById("artwork-date").innerText = `Date: ${artworkData.date}`;
-    document.getElementById("artwork-description").innerText = artworkData.description;
-    document.getElementById("artwork-image").src = artworkData.imageURL;
-
-    // Display the overlay
-    const overlay = document.getElementById("artwork-overlay");
-    overlay.classList.add("visible");
-    overlay.classList.remove("hidden");
-    overlayOpen = true;
-
-    // Unlock pointer controls and disable movement
-    controls.unlock();
-    disableMovement();
-}
-
-// Close Artwork Overlay
-function closeOverlay() {
-    const overlay = document.getElementById("artwork-overlay");
-    if (overlay) {
-        console.log("Closing overlay..."); // Debug statement to ensure function is triggered
-        // overlay.style.display = "none";
-        overlay.classList.remove("visible");
-        overlay.classList.add("hidden");
-        overlayOpen = false;
-        isFocused = false; // Reset focus state to allow interaction again.
-
-        // Relock pointer controls and re-enable movement
-        controls.lock();
-    } else {
-        console.error("Overlay element not found!");
-    }
-}
-
-
 // Define the callback function for the observer
 const observer = new MutationObserver((mutationsList) => {
     // Loop through all mutations (changes) detected in the DOM
@@ -1181,6 +1316,16 @@ const observer = new MutationObserver((mutationsList) => {
                 // Stop observing further DOM changes to improve performance since the button was found
                 observer.disconnect();
             }
+            // Try to find the "artwork-desc-close-btn" element in the DOM
+            const artworkDescCloseButton = document.getElementById("artwork-desc-close-btn");
+            
+            if (artworkDescCloseButton) { // If the button is found
+                console.log("Attaching click event to artwork-desc-close-btn");
+                // Attach a click event listener to the button to call the closeChatOverlay function
+                artworkDescCloseButton.addEventListener("click", closeArtworkDescOverlay);
+                // Stop observing further DOM changes to improve performance since the button was found
+                observer.disconnect();
+            }
         }
     }
 });
@@ -1193,7 +1338,7 @@ observer.observe(document.body, {
 
 
 
-// ---------------------------------------- Section: Create AI Visitors & get them moving ---------------------------------------- //
+// ---------------------------------------- Section: Get AI visitors moving ---------------------------------------- //
 
 // Create an array to hold visitors for reference
 const visitors = [];
@@ -1542,6 +1687,12 @@ function closeChatOverlay() {
             console.error("Failed to lock pointer controls:", error);
         }
     }
+
+    // Block interactions temporarily so that clicking close doesn't retrigger opening the overlay again
+    interactionBlocked = true;
+    setTimeout(() => {
+        interactionBlocked = false; // Unblock interactions after 500ms
+    }, 500);
 }
 
 // Resume allowing visitors to move around after a chat is ended
