@@ -30,7 +30,7 @@ function Gallery() {
     <div>
         { /* <!-- Welcome Overlay --> */ }
         <div id="welcomeOverlay">
-            <div id="welcomeText">Welcome to the Gallery of Beeb</div>
+            <div id="welcomeText">Welcome to the Behind Tommy Gallery</div>
         </div>
         
         { /* <!-- Gallery --> */ }
