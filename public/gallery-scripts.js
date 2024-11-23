@@ -168,10 +168,14 @@ const outerBlockSkirtingDepth = galleryDepth + 0.02;
 const outerBlockSkirtingColor = 0x545454;
 
 // Outer walls
-createWall(0.5, galleryHeight, galleryDepth, 0xe9e9e9, { x: -galleryWidth / 2, y: galleryHeight / 2, z: 0 }); // Left
-createWall(0.5, galleryHeight, galleryDepth, 0xe9e9e9, { x: galleryWidth / 2, y: galleryHeight / 2, z: 0 }); // Right
-createWall(galleryWidth, galleryHeight, 0.5, 0xe9e9e9, { x: 0, y: galleryHeight / 2, z: -galleryDepth / 2 }); // Back
-createWall(galleryWidth, galleryHeight, 0.5, 0xe9e9e9, { x: 0, y: galleryHeight / 2, z: galleryDepth / 2 }); // Front
+const leftWall = createWall(0.5, galleryHeight, galleryDepth, 0xe9e9e9, { x: -galleryWidth / 2, y: galleryHeight / 2, z: 0 }); // Left
+const rightWall = createWall(0.5, galleryHeight, galleryDepth, 0xe9e9e9, { x: galleryWidth / 2, y: galleryHeight / 2, z: 0 }); // Right
+const backWall = createWall(galleryWidth, galleryHeight, 0.5, 0xe9e9e9, { x: 0, y: galleryHeight / 2, z: -galleryDepth / 2 }); // Back
+const frontWall = createWall(galleryWidth, galleryHeight, 0.5, 0xe9e9e9, { x: 0, y: galleryHeight / 2, z: galleryDepth / 2 }); // Front
+
+// Outer walls are placed in a set I'll use for collision handling (other walls are passthrough)
+const collidableWalls = [];
+collidableWalls.push(leftWall, rightWall, backWall, frontWall);
 
 // Outer wall skirting
 createWall(0.52, outerBlockSkirtingHeight, galleryDepth + 0.02, outerBlockSkirtingColor, { x: -galleryWidth / 2, y: 0.02, z: 0 }); // Left
@@ -1149,6 +1153,30 @@ document.addEventListener("keyup", (event) => {
     }
 });
 
+function checkCameraCollisions(movementVector, bufferDistance) {
+    const raycaster = new THREE.Raycaster();
+    const cameraPosition = camera.position.clone();
+
+    // Normalize the movement vector to create a ray direction
+    const rayDirection = movementVector.clone().normalize();
+
+    // Set the raycaster's position and direction
+    raycaster.set(cameraPosition, rayDirection);
+
+    // Perform raycasting with collidable objects
+    const collisions = raycaster.intersectObjects(collidableWalls, true);
+
+    // Check if any collision is within the buffer distance
+    for (const intersect of collisions) {
+        if (intersect.distance < bufferDistance) {
+            console.log("collided!")
+            return true; // Collision detected
+        }
+    }
+
+    return false; // No collision
+}
+
 
 
 // ---------------------------------------- Section: Focus on artwork & art overlay ---------------------------------------- //
@@ -1808,14 +1836,16 @@ function displayMessage(message, sender, addToHistory) {
 function showTypingIndicator() {
     // Create the typing indicator element
     const typingIndicator = document.createElement("div");
-    typingIndicator.id = "typing-indicator";
+    typingIndicator.id = "typing-indicator-message";
     typingIndicator.classList.add("chat-message", "visitor-message");
 
     // Add dots for the animated effect
     typingIndicator.innerHTML = `
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
+        <div id="typing-indicator">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
     `;
 
     // Append to chat window
@@ -1834,12 +1864,20 @@ function showTypingIndicator() {
                 <span class="dot"></span>
                 <span class="dot"></span>
             `;
+            // indicator.innerHTML = `
+            //     <span class="hmm">!!?! I didn't see you there! I like to spend my time quietly appreciating the pieces, but since that's no longer possible...&nbsp;</span>
+            //     // <!-- <div id="typing-indicator" style="margin-top: 10px;">
+            //     //     <span class="dot"></span>
+            //     //     <span class="dot"></span>
+            //     //     <span class="dot"></span>
+            //     // </div> -->
+            // `;
         }
     }, 4000); // 4 seconds
 }
 
 function hideTypingIndicator() {
-    const typingIndicator = document.getElementById("typing-indicator");
+    const typingIndicator = document.getElementById("typing-indicator-message");
     if (typingIndicator) {
         typingIndicator.remove();
     }
@@ -2024,7 +2062,7 @@ async function getOpenAIResponse(messages, maxRetries = 3, initialDelay = 1000, 
 // ---------------------------------------- Section: Render and animate ---------------------------------------- //
 
 // Position the camera and render the scene
-camera.position.set(-13.2, 1.6, 14);
+camera.position.set(-13.2, 1.4, 14);
 camera.lookAt(0, 1.6, 0);
 
 
@@ -2034,36 +2072,42 @@ camera.lookAt(0, 1.6, 0);
 function animate() {
     requestAnimationFrame(animate);
 
-    // Test cube
-    // cube.rotation.x += 0.01;
-    // cube.rotation.y += 0.01;
-
-    // ----- Movement ----- //
-    
-    const moveSpeed = 0.15; // Adjust for desired movement speed
+    const moveSpeed = 0.15; // Movement speed
+    const bufferDistance = 0.85; // Buffer distance to prevent clipping through walls
     const direction = new THREE.Vector3();
     const velocity = new THREE.Vector3();
 
+    // Calculate movement velocity based on key presses
     if (moveForward) velocity.z += moveSpeed;
     if (moveBackward) velocity.z -= moveSpeed;
     if (moveLeft) velocity.x -= moveSpeed;
     if (moveRight) velocity.x += moveSpeed;
 
-    // Get the direction the camera is facing, but keep only horizontal components
+    // ----- Forward/Backward Movement ----- //
     controls.getDirection(direction);
-    direction.y = 0; // Ensure no vertical movement
+    direction.y = 0; // Ensure movement is only horizontal
     direction.normalize();
-    direction.multiplyScalar(velocity.z);
-    camera.position.add(direction);
 
-    // Move horizontally for strafing
+    // Handle forward/backward movement
+    const forwardVector = direction.clone().multiplyScalar(velocity.z);
+    if (!checkCameraCollisions(forwardVector, bufferDistance)) {
+        camera.position.add(forwardVector);
+    }
+
+    // ----- Strafing Movement ----- //
     const strafeDirection = new THREE.Vector3();
-    strafeDirection.setFromMatrixColumn(camera.matrix, 0);
-    strafeDirection.y = 0; // Ensure no vertical movement
+    strafeDirection.setFromMatrixColumn(camera.matrix, 0); // Get strafe direction (left/right)
+    strafeDirection.y = 0; // Ensure movement is only horizontal
     strafeDirection.normalize();
-    strafeDirection.multiplyScalar(velocity.x);
-    camera.position.add(strafeDirection);
 
+    // Handle left/right strafing
+    const strafeVector = strafeDirection.clone().multiplyScalar(velocity.x);
+    if (!checkCameraCollisions(strafeVector, bufferDistance)) {
+        camera.position.add(strafeVector);
+    }
+
+    // Render the scene
     renderer.render(scene, camera);
 }
 animate();
+
