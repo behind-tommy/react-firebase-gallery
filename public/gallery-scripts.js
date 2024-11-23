@@ -42,7 +42,7 @@ function fadeOutOverlay() {
 }
 
 // Call this function once your scene is ready to display
-setTimeout(fadeOutOverlay, 1000); // Adjust timing as needed
+setTimeout(fadeOutOverlay, 3000); // Adjust timing as needed
 
 
 // ---------------------------------------- Section: Gallery layout ---------------------------------------- //
