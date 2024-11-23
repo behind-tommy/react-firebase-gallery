@@ -27,7 +27,7 @@ const ArtStudio = () => {
 
     // Render logout, artspaceslist and art details
     return (
-        <div className="art-studio-holder" style={{ display: 'flex', height: '100vh' }}>
+        <div className="art-studio-holder">
             <div className="header-nav">
                 {/* on click, call handleLogout */}
                 <span className="art-studio-header-name">Artist Studio</span>
