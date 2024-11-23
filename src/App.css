@@ -101,6 +101,7 @@ html, body, button {
   text-align: left;
   font-family: "Lexend", sans-serif;
   font-weight: 500;
+  width: 100%;
 }
 
 .login-form-holder form input::placeholder {
@@ -295,14 +296,14 @@ input[type="file"] {
     max-width: 85%;
   }
   
-  .welcome-options button {
+  .welcome-options button, .login-form-holder form input {
     font-size: 4em;
   }
 }
 
 /* iPad Pro */
 @media (max-width: 929px) { 
-  .welcome-options button {
+  .welcome-options button, .login-form-holder form input {
     font-size: 4em;
     margin: 25px 0;
   }
@@ -314,9 +315,8 @@ input[type="file"] {
     max-width: 95%;
     padding: 1rem;
   }
-  
 
-  .welcome-options button {
+  .welcome-options button, .login-form-holder form input {
     font-size: 3em;
     margin: 25px 0;
   }
