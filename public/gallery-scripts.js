@@ -42,7 +42,7 @@ function fadeOutOverlay() {
 }
 
 // Call this function once your scene is ready to display
-setTimeout(fadeOutOverlay, 3000); // Adjust timing as needed
+setTimeout(fadeOutOverlay, 1000); // Adjust timing as needed
 
 
 // ---------------------------------------- Section: Gallery layout ---------------------------------------- //
@@ -57,6 +57,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Use PCF Soft Shadows for be
 // renderer.shadowMap.type = THREE.BasicShadowMap; // Use PCF Soft Shadows for better quality?
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limit to 1.5 or even 1
 document.getElementById("gallery").appendChild(renderer.domElement);
+
+renderer.outputEncoding = THREE.sRGBEncoding;
 
   
 
@@ -181,7 +183,7 @@ createWall(galleryWidth + 0.02, outerBlockSkirtingHeight, 0.52, outerBlockSkirti
 const blockWidth = 6;
 const blockHeight = 3;
 const blockDepth = 0.5;
-const blockColor = 0xe9e9e9; // White
+const blockColor = 0xf3f3f3; // White
 
 // Inner Block Skirting Setup
 const innerBlockSkirtingWidth = 6.02;
@@ -391,16 +393,16 @@ loadModel('/models/rullo_lightstar_ceiling_lamp_1.glb', scene, { x: 4.3, y: gall
 // ---------------------------------------- Section: Lighting ---------------------------------------- //
 
 // Add ambient light
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.7); // Soft white ambient light to brighten up the scene
+const ambientLight = new THREE.AmbientLight(0xffffff, 2.2); // Soft white ambient light to brighten up the scene
 scene.add(ambientLight);
 
 // Add directional light to simulate sunlight
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Bright white light with adjusted intensity
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2); // Bright white light with adjusted intensity
 directionalLight.position.set(0, 20, 8); // Position above the scene
 directionalLight.castShadow = true; // Enable shadows
 
 // Add directional light to simulate sunlight
-const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5); // Bright white light with adjusted intensity
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.2); // Bright white light with adjusted intensity
 directionalLight2.position.set(0, 17, -10); // Position above the scene
 directionalLight2.castShadow = true; // Enable shadows
 
@@ -426,31 +428,31 @@ scene.add(directionalLight);
 // Point Lights
 
 // Light near the center of the room
-const centerLight = new THREE.PointLight(0xffffff, 25, 100);
+const centerLight = new THREE.PointLight(0xffffff, 10, 100);
 centerLight.position.set(0, 6, 0);
 centerLight.castShadow = true;
 scene.add(centerLight);
 
 // Light near a center-corner of the gallery
-const cornerLight1 = new THREE.PointLight(0xffffff, 25, 100);
+const cornerLight1 = new THREE.PointLight(0xffffff, 10, 100);
 cornerLight1.position.set(-8, 5, -5);
 cornerLight1.castShadow = true;
 scene.add(cornerLight1);
 
 // Light on the center-opposite corner
-const cornerLight2 = new THREE.PointLight(0xffffff, 25, 100);
+const cornerLight2 = new THREE.PointLight(0xffffff, 10, 100);
 cornerLight2.position.set(8, 5, 5);
 cornerLight2.castShadow = true;
 scene.add(cornerLight2);
 
 // Light on the entrance center
-const cornerLight3 = new THREE.PointLight(0xffffff, 25, 100);
+const cornerLight3 = new THREE.PointLight(0xffffff, 10, 100);
 cornerLight3.position.set(0, 5, 14);
 cornerLight3.castShadow = true;
 scene.add(cornerLight3);
 
 // Light on the back center
-const cornerLight4 = new THREE.PointLight(0xffffff, 25, 100);
+const cornerLight4 = new THREE.PointLight(0xffffff, 10, 100);
 cornerLight4.position.set(0, 5, -14);
 cornerLight4.castShadow = true;
 scene.add(cornerLight4);
@@ -481,6 +483,9 @@ async function createFramedArtwork(
 
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load(imageURL, (texture) => {
+            // Set the texture encoding for gamma correction
+            texture.encoding = THREE.sRGBEncoding;
+
             // Calculate the aspect ratio of the image
             const aspectRatio = texture.image.width / texture.image.height;
 
@@ -494,7 +499,7 @@ async function createFramedArtwork(
                 artworkWidth,
                 artworkHeight
             );
-            const artworkMaterial = new THREE.MeshBasicMaterial({ map: texture });
+            const artworkMaterial = new THREE.MeshStandardMaterial({ map: texture });
             const artworkMesh = new THREE.Mesh(artworkGeometry, artworkMaterial);
 
             // Create a frame geometry around the artwork
@@ -1525,6 +1530,15 @@ loadVisitorModel(3, '/models/agent_s.gltf', 7, 7, 7, 0.01, './img/agents.png', '
 // Load Celeste
 loadVisitorModel(4, '/models/celeste.gltf', 0.045, 0.045, 0.045, 0.02, './img/celeste.png', 'Celeste', 'I love quacking');
 
+// Visitor personalities (one for each visitor): Marshal, Isabelle, Agent S, Celeste
+const visitorPersonalities = [
+    "Conan O'Brien's humor. Pervy. Talk simply and be rude. Makes silly insults of the user.",
+    "Generally an extremely embarrassed person. Randomly and frequently lets out a huge fart.",
+    "Is a curt person. Always bidding a specific price for the artwork, but secretly has no money to pay for it. Gets flabbergasted when people finds out he has no money to pay for the art.",
+    // "A spy on a secret mission. Wants to share about it, but only if you push hard enough. Something random about naughty or evil hamsters)",
+    "An evil scheming royal courtmaiden in a china palace-intrigue soap drama. Shares too much about her schemes to seduce the king and rule the court. Speaks in simple mandarin, in short sentences.",
+];
+
 
 // ---------------------------------------- Section: Chat with Visitors ---------------------------------------- //
 
@@ -1809,6 +1823,19 @@ function showTypingIndicator() {
 
     // Scroll to the latest message
     document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+
+    // Add "hmm..." after 5 seconds if still loading
+    setTimeout(() => {
+        const indicator = document.getElementById("typing-indicator");
+        if (indicator) {
+            indicator.innerHTML = `
+                <span class="hmm">hmm...&nbsp;</span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            `;
+        }
+    }, 4000); // 4 seconds
 }
 
 function hideTypingIndicator() {
@@ -1821,15 +1848,6 @@ function hideTypingIndicator() {
 
 
 // ---------------------------------------- Section: AI conversations ---------------------------------------- //
-
-// Visitor personalities (one for each visitor): Marshal, Isabelle, Agent S, Celeste
-const visitorPersonalities = [
-    "Conan O'Brien's humor. Pervy. Talk simply and be rude. Makes silly insults of the user.",
-    "Generally an extremely embarrassed person. Randomly and frequently lets out a huge fart.",
-    "Is a curt person. Always bidding a specific price for the artwork, but secretly has no money to pay for it. Gets flabbergasted when people finds out he has no money to pay for the art.",
-    // "A spy on a secret mission. Wants to share about it, but only if you push hard enough. Something random about naughty or evil hamsters)",
-    "An evil scheming royal courtmaiden in a china palace-intrigue soap drama. Shares too much about her schemes to seduce the king and rule the court. Speaks in simple mandarin, in short sentences.",
-];
 
 // Visitor response limit to control conversation length
 const RESPONSE_LIMIT = 5;
@@ -1922,28 +1940,84 @@ async function generateArtworkComment(visitor, artworkURL, artworkId) {
         });
 }
 
-// OpenAI general interaction function for all messages
-async function getOpenAIResponse(messages) {
-    // Call the completions API (POST) with my API key and prompt
-    const response = await fetch("https://fetchopenairesponse-fegobqnsiq-uc.a.run.app", {
+
+// OpenAI general interaction function for all messages with retry and timeout
+// Takes params for message payload, how many max retries, the initial delay between retries, and max timeout to set below calling off the request
+async function getOpenAIResponse(messages, maxRetries = 3, initialDelay = 1000, timeout = 10000) {
+    // Setting up the config for calling the completions API (POST) via firebase cloud functions
+    const url = "https://fetchopenairesponse-fegobqnsiq-uc.a.run.app";
+    const options = {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
             model: "gpt-4o-mini",
-            messages: messages
-        })
-    });
+            messages: messages,
+        }),
+    };
 
-    if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${await response.text()}`);
+    let attempt = 0; // Track retry attempts
+    let delay = initialDelay; // Initial delay for retries
+
+    // Helper function to handle fetch with timeout
+    const fetchWithTimeout = async (url, options, timeout) => {
+        // creates an abort controller that lets us abort the API request
+        const controller = new AbortController();
+        // When time from request start hits timeout, abort the fetch request
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        // call the fetch request, with the options passed in + property to listen to the abort signal
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } catch (error) {
+            // throw the abort error if it timeouts
+            if (error.name === "AbortError") {
+                throw new Error("Request timed out");
+            }
+            throw error; // Rethrow other errors
+        } finally {
+            clearTimeout(timeoutId); // Clear timeout if fetch completes
+        }
+    };
+
+    // Call the fetch request with exponential backoff retry 
+    while (attempt < maxRetries) {
+        try {
+            // Attempt fetch with timeout
+            const response = await fetchWithTimeout(url, options, timeout);
+
+            // Handle non-OK responses
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${await response.text()}`);
+            }
+
+            // Parse and return the response content
+            const data = await response.json();
+            return data.choices[0].message.content;
+
+        } catch (error) {
+            attempt++; // Increment attempt count
+
+            // Stop retrying after max attempts
+            if (attempt >= maxRetries) {
+                console.error(`Failed after ${maxRetries} attempts: ${error.message}`);
+                throw error; // Rethrow error after all retries fail
+            }
+
+            // Log retry information
+            if (error.message === "Request timed out") {
+                console.warn(`Attempt ${attempt} timed out. Retrying in ${delay}ms...`);
+            } else {
+                console.warn(`Attempt ${attempt} failed: ${error.message}. Retrying in ${delay}ms...`);
+            }
+
+            // Wait for delay before retrying
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            delay *= 2; // Exponential backoff
+        }
     }
-    // store OpenAI's successful response in the data constant in json format
-    const data = await response.json();
-    // return the "content" value in OpenAI's response
-    return data.choices[0].message.content;
 }
+
 
 
 
