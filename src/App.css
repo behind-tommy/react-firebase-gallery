@@ -176,8 +176,7 @@ html, body, button {
 
 .art-space-grid {
   width: 35%;
-  padding-top: 90px;
-  height: 100vh;
+  padding: 90px 0 90px 0;
   overflow: scroll;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
@@ -191,18 +190,6 @@ html, body, button {
   width: 100%;
   display: flex;
   align-items: flex-start;  /* Align child divs at the top */
-}
-
-/* Mobile view: Stack the divs vertically */
-@media (max-width: 768px) { /* Adjust this width for your desired breakpoint */
-  .art-details, .art-studio-holder {
-    flex-direction: column; /* Switch to vertical stacking */
-  }
-
-  .art-details-holder, .art-space-grid {
-    width: 100%;
-  }
-  
 }
 
 .art-edit-details-holder {
@@ -247,7 +234,6 @@ html, body, button {
 }
 
 .art-upload-holder .art-studio-label {
-  padding-left: 10px;
   margin-top: 15px;
   display: block;
   margin-bottom: 0;
@@ -256,7 +242,7 @@ html, body, button {
 
 .art-upload-holder {
   width: 34.5%;
-  margin: 0 55px 0 0;
+  margin: 0 55px 30px 0;
 }
 
 .art-upload-holder img {
@@ -269,7 +255,7 @@ html, body, button {
 }
 
 input[type="file"] {
-  padding: 10px;
+  padding: 10px 10px 10px 0;
 }
 
 .list-of-art {
@@ -282,11 +268,15 @@ input[type="file"] {
   display: none;           /* For Chrome, Safari, and Edge: Hide scrollbar */
 }
 
+.list-of-art p {
+  margin-left: 5px;
+}
+
 .artwork-tile {
-  width: 100px;
-  height: 100px;
+  width: 31%;
+  height: 90px;
   background-color: #d7d7d7;
-  margin: 5px;
+  margin: 1%;
   display: inline-block;
 }
 
@@ -295,4 +285,24 @@ input[type="file"] {
   height: 100%;               /* Fill the square height */
   object-fit: cover;          /* Maintain aspect ratio and fill the square */
   object-position: center;    /* Center the image */
+}
+
+/* Mobile view: Stack the divs vertically */
+@media (max-width: 768px) { /* Adjust this width for your desired breakpoint */
+  .art-details, .art-studio-holder {
+    flex-direction: column; /* Switch to vertical stacking */
+  }
+
+  .art-details-holder, .art-space-grid {
+    width: 100%;
+  }
+
+  .art-details-holder {
+    border-right: none;
+  }
+
+  .art-upload-holder {
+    width: 100%;
+  }
+  
 }

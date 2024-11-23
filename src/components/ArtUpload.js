@@ -9,7 +9,7 @@ import Pica from 'pica';
 
 
 // Accepts spaceId as a prop and renders/calls functions based on spaceId
-const ArtUpload = ({ spaceId }) => {
+const ArtUpload = ({ spaceId, onArtUpload }) => {
     // state to store URL of uploaded file. This is used to render the image preview.
     const [artUrl, setArtUrl] = useState(null);
     // Initializes storage and DB (so I can interact with them)
@@ -41,6 +41,7 @@ const ArtUpload = ({ spaceId }) => {
 
     // Function called when user uplaods a file via the file upload input.
     const handleFileChange = async (e) => {
+        const fileInput = e.target; // Capture the input element
         // Retrieves the first selected file from the file input.
         const file = e.target.files[0];
 
@@ -84,6 +85,16 @@ const ArtUpload = ({ spaceId }) => {
         // Merge: true - By default, calling setDoc replaces the entire document, meaning any fields not included in the new data will be removed from the document. Using the { merge: true } option changes this behavior. Instead of replacing the entire document, Firestore updates only the specified fields in the document while keeping any existing fields intact. This is called merging.
         await setDoc(docRef, { artUrl: url }, { merge: true });
         console.log('Uploaded file available at:', url);
+
+        // Notify parent about the new image
+        if (onArtUpload) {
+            onArtUpload(spaceId, url);
+        }
+
+        // Reset the file input to clear the uploaded file name
+        fileInput.value = null;
+
+        alert("Art uploaded!");
     };
 
     // Function to resize and compress the image using Pica

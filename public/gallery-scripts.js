@@ -2057,8 +2057,6 @@ async function getOpenAIResponse(messages, maxRetries = 3, initialDelay = 1000, 
 }
 
 
-
-
 // ---------------------------------------- Section: Render and animate ---------------------------------------- //
 
 // Position the camera and render the scene
