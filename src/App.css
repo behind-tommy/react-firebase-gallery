@@ -289,8 +289,38 @@ input[type="file"] {
   object-position: center;    /* Center the image */
 }
 
-/* Mobile view: Stack the divs vertically */
+/* iPad Pro */
+@media (max-width: 1024px) { 
+  .entrance-holder {
+    max-width: 85%;
+  }
+  
+  .welcome-options button {
+    font-size: 4em;
+  }
+}
+
+/* iPad Pro */
+@media (max-width: 929px) { 
+  .welcome-options button {
+    font-size: 4em;
+    margin: 25px 0;
+  }
+}
+
+/* Mobile view */
 @media (max-width: 768px) { /* Adjust this width for your desired breakpoint */
+  .entrance-holder {
+    max-width: 95%;
+    padding: 1rem;
+  }
+  
+
+  .welcome-options button {
+    font-size: 3em;
+    margin: 25px 0;
+  }
+
   .art-details, .art-studio-holder {
     flex-direction: column; /* Switch to vertical stacking */
   }

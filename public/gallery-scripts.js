@@ -221,7 +221,7 @@ const concreteThickness = 0.5;
 
 // Center concrete section
 const centerCeilingGeometry = new THREE.BoxGeometry(galleryWidth / 3, concreteThickness, galleryDepth);
-const centerConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xfafafa });
+const centerConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xefefef });
 const centerCeilingMesh = new THREE.Mesh(centerCeilingGeometry, centerConcreteMaterial);
 centerCeilingMesh.position.set(0, galleryHeight + concreteThickness / 2, 0);
 centerCeilingMesh.receiveShadow = true;
@@ -230,7 +230,7 @@ scene.add(centerCeilingMesh);
 
 // Left concrete section
 const leftCeilingGeometry = new THREE.BoxGeometry(galleryWidth / 6, concreteThickness, galleryDepth);
-const leftConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xfafafa });
+const leftConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xefefef });
 const leftCeilingMesh = new THREE.Mesh(leftCeilingGeometry, leftConcreteMaterial);
 leftCeilingMesh.position.set(-galleryWidth/2, galleryHeight + concreteThickness / 2, 0);
 leftCeilingMesh.receiveShadow = true;
@@ -239,7 +239,7 @@ scene.add(leftCeilingMesh);
 
 // Right concrete section
 const rightCeilingGeometry = new THREE.BoxGeometry(galleryWidth / 6, concreteThickness, galleryDepth);
-const rightConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xfafafa });
+const rightConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xefefef });
 const rightCeilingMesh = new THREE.Mesh(rightCeilingGeometry, rightConcreteMaterial);
 rightCeilingMesh.position.set(galleryWidth/2, galleryHeight + concreteThickness / 2, 0);
 rightCeilingMesh.receiveShadow = true;
@@ -248,7 +248,7 @@ scene.add(rightCeilingMesh);
 
 // Front concrete section
 const frontCeilingGeometry = new THREE.BoxGeometry(galleryWidth, concreteThickness, galleryDepth / 6);
-const frontConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xfafafa });
+const frontConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xefefef });
 const frontCeilingMesh = new THREE.Mesh(frontCeilingGeometry, frontConcreteMaterial);
 frontCeilingMesh.position.set(0, galleryHeight + concreteThickness / 2, galleryDepth/2.4);
 frontCeilingMesh.receiveShadow = true;
@@ -257,7 +257,7 @@ scene.add(frontCeilingMesh);
 
 // Back concrete section
 const backCeilingGeometry = new THREE.BoxGeometry(galleryWidth, concreteThickness, galleryDepth / 6);
-const backConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xfafafa });
+const backConcreteMaterial = new THREE.MeshStandardMaterial({ color: 0xefefef });
 const backCeilingMesh = new THREE.Mesh(backCeilingGeometry, backConcreteMaterial);
 backCeilingMesh.position.set(0, galleryHeight + concreteThickness / 2, -galleryDepth/2.4);
 backCeilingMesh.receiveShadow = true;
@@ -266,7 +266,7 @@ scene.add(backCeilingMesh);
 
 // Ceiling Grid with Windows
 const beamThickness = 0.1;
-const gridSize = 16;
+const gridSize = 12;
 
 // Create ceiling frame beams with shadow casting
 for (let i = -galleryWidth / 2; i <= galleryWidth / 2; i += galleryWidth / (gridSize * 1.4)) {
