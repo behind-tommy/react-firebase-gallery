@@ -38,6 +38,26 @@ const admin = require('firebase-admin');
 // Initialize Firebase Admin SDK
 admin.initializeApp();
 
+require('dotenv').config();
+
+// On local, reference storage emulator instead of prod storage
+if (process.env.FUNCTIONS_EMULATOR) {
+  console.log("Using Emulator for Functions and Storage...");
+
+  process.env.FIREBASE_STORAGE_EMULATOR_HOST = process.env.STORAGE_EMULATOR_HOST;
+  process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST;
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.AUTH_EMULATOR_HOST;
+
+  admin.firestore().settings({
+      host: process.env.FIRESTORE_EMULATOR_HOST,
+      ssl: false,
+  });
+} else {
+  console.log("Using Production Firebase Storage...");
+}
+
+console.log("Storage Host:", process.env.FIREBASE_STORAGE_EMULATOR_HOST);
+
 // -----------------Section: Use Cloud function for OpenAPI api call (so I send my secret key via cloud securely) ----------------- //
 exports.fetchOpenAIResponse = functions.https.onRequest(
     { secrets: [openaiApiKey] },
