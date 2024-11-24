@@ -100,7 +100,7 @@ function Gallery() {
             <div id="welcomeOverlay">
                 {isLoading ? (
                     <div className="loader-container">
-                        <div className="loader">...</div> {/* Circular Loader */}
+                        <div className="loader">Loading...</div> {/* Circular Loader */}
                     </div>
                 ) : (
                     <div id="welcomeText">
