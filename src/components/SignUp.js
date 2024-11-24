@@ -68,7 +68,7 @@ const SignUp = ({setView}) => {
             // Commit the batch
             await batch.commit();
 
-            alert('Signed-up!');
+            alert("Welcome to your new studio! Set up your gallery's art pieces here");
         } catch (err) {
             // updates error state with error message
             setError(err.message);
@@ -80,11 +80,10 @@ const SignUp = ({setView}) => {
         <div className="entrance-holder">
             <button className="small-header back-button" onClick={ () => setView('welcome') }>&#8592;  BACK</button>
             <div className="login-form-holder">
-                <h2>Sign Up</h2>
                 <form onSubmit={handleSignUp}>
                     <input
                         type="email"
-                        placeholder="Email"
+                        placeholder="Artist Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />

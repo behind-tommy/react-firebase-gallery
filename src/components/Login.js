@@ -35,8 +35,6 @@ const Login = ({ setUser, setView }) => {
             } else {
                 throw new Error('User data not found in Firestore.');
             }
-
-            alert('Logged in successfully!');
        } catch (err) {
            setError(err.message);
        }

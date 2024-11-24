@@ -86,8 +86,8 @@ function App() {
                         <span className="small-header">WELCOME</span>
                         <div className="welcome-options">
                             <button onClick={() => setView('login')}>Enter Studio</button>
-                            <button onClick={() => setView('signup')}>Sign-up</button>
-                            <button onClick={() => window.location.href = '/g/shimin'}>Visit Gallery</button>
+                            <button onClick={() => setView('signup')}>Join as an Artist</button>
+                            {/* <button onClick={() => window.location.href = '/g/shimin'}>Visit Gallery</button> */}
                         </div>
                     </div>
                 );

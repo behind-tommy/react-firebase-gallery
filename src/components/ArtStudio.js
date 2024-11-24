@@ -18,7 +18,7 @@ const ArtStudio = ({user}) => {
     // State for gallery data of the logged in user
     const [gallery, setGallery] = useState({ name: '', url: '' });
     // States for gallery & artist details * settings state
-    const [artistName, setArtistName] = useState(user?.artistName || 'Shimin');
+    const [artistName, setArtistName] = useState(user?.artistName || 'My Artist Name');
     const [settingsOpen, setSettingsOpen] = useState(false);
     // States for view / edit state
     const [isEditingGalleryName, setIsEditingGalleryName] = useState(false);
@@ -140,75 +140,78 @@ const ArtStudio = ({user}) => {
             <div className="header-nav">
                 {/* on click, call handleLogout */}
                 <span className="art-studio-header-name">Artist Studio</span>
-                <button onClick={() => setSettingsOpen(!settingsOpen)}>⚙️</button>
-                <button className="art-studio-logout" onClick={handleLogout}>Exit Studio</button>
+                <button className="settings-button" onClick={() => setSettingsOpen(!settingsOpen)}><img src="img/settings.png"></img></button>
+                <button className="art-studio-logout" onClick={handleLogout}>Exit</button>
             </div>
 
             {/* Gallery Settings Section */}
             {settingsOpen && (
                 <div className="settings-view">
                     <h3>Settings</h3>
+                    
+                    {/* Artist Name */}
+                    <div>
+                        <label className='art-studio-label'>Artist Name</label>
+                        {isEditingArtistName ? (
+                            <div>
+                                
+                                <button className="settings-edit-button" onClick={saveArtistName}>Save</button>
+                                <button className="settings-edit-button" onClick={() => setIsEditingArtistName(false)}>Cancel</button>
+                                <input
+                                        type="text"
+                                        value={newArtistName}
+                                        onChange={(e) => setNewArtistName(e.target.value)}
+                                    />
+                            </div>
+                        ) : (
+                            <div>
+                                <button className="settings-edit-button" onClick={() => setIsEditingArtistName(true)}>Edit</button>
+                                <span>{artistName}</span>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Gallery Name */}
                     <div>
-                        <label>Gallery Name:</label>
+                        <label className='art-studio-label'>Gallery Name</label>
                         {isEditingGalleryName ? (
                             <div>
+                                <button className="settings-edit-button" onClick={saveGalleryName}>Save</button>
+                                <button className="settings-edit-button" onClick={() => setIsEditingGalleryName(false)}>Cancel</button>
                                 <input
                                     type="text"
                                     value={newGalleryName}
                                     onChange={(e) => setNewGalleryName(e.target.value)}
                                 />
-                                <button onClick={saveGalleryName}>Save</button>
-                                <button onClick={() => setIsEditingGalleryName(false)}>Cancel</button>
                             </div>
                         ) : (
                             <div>
+                                <button className="settings-edit-button" onClick={() => setIsEditingGalleryName(true)}>Edit</button>
                                 <span>{gallery.name}</span>
-                                <button onClick={() => setIsEditingGalleryName(true)}>Edit</button>
                             </div>
                         )}
                     </div>
 
-                    {/* Artist Name */}
-                    <div>
-                        <label>Artist Name:</label>
-                        {isEditingArtistName ? (
-                            <div>
-                                <input
-                                    type="text"
-                                    value={newArtistName}
-                                    onChange={(e) => setNewArtistName(e.target.value)}
-                                />
-                                <button onClick={saveArtistName}>Save</button>
-                                <button onClick={() => setIsEditingArtistName(false)}>Cancel</button>
-                            </div>
-                        ) : (
-                            <div>
-                                <span>{artistName}</span>
-                                <button onClick={() => setIsEditingArtistName(true)}>Edit</button>
-                            </div>
-                        )}
-                    </div>
 
                     {/* Gallery URL */}
                     <div>
-                        <label>Gallery URL:</label>
+                        <label className='art-studio-label'>Gallery URL</label>
                         {isEditingGalleryUrl ? (
                             <div>
+                                <button className="settings-edit-button" onClick={saveGalleryUrl}>Save</button>
+                                <button className="settings-edit-button" onClick={() => setIsEditingGalleryUrl(false)}>Cancel</button>
                                 <input
                                     type="text"
                                     value={newGalleryUrl}
                                     onChange={(e) => setNewGalleryUrl(e.target.value)}
                                 />
-                                <button onClick={saveGalleryUrl}>Save</button>
-                                <button onClick={() => setIsEditingGalleryUrl(false)}>Cancel</button>
                             </div>
                         ) : (
                             <div>
+                                <button className="settings-edit-button" onClick={() => setIsEditingGalleryUrl(true)}>Edit</button>
                                 <a href={gallery.url} target="_blank" rel="noopener noreferrer">
                                     {gallery.url}
                                 </a>
-                                <button onClick={() => setIsEditingGalleryUrl(true)}>Edit</button>
                             </div>
                         )}
                     </div>

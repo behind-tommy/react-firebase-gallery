@@ -74,7 +74,7 @@ html, body, button {
   outline: none;
   padding: 0px;
   display: block;
-  font-size: 6em;
+  font-size: 4.5em;
   text-align: left;
   font-family: "Lexend", sans-serif;
   font-weight: 500;
@@ -157,16 +157,28 @@ html, body, button {
   color: rgb(0, 0, 0, 0.7);
 }
 
+.settings-button {
+  width: 15px;
+  border: none;
+  background: none;
+  opacity: 0.3;
+  margin-left: 15px;
+  position: relative;
+  top: 2px;
+}
+
+.settings-button img {
+  width: 100%;
+}
+
 .settings-view {
   position: absolute;
   top: 50px;
-  right: 20px;
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  width: 300px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 20px 40px 40px 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
   transition: transform 0.3s ease-in-out;
 }
 
@@ -180,6 +192,27 @@ html, body, button {
   transform: translateY(0);
   visibility: visible;
   opacity: 1;
+}
+
+.settings-edit-button {
+  margin-right: 10px;
+  padding: 4px 20px;
+  border: 1px solid #d7d7d7;
+  color: rgb(0, 0, 0, 0.7);
+}
+
+.settings-view .art-studio-label {
+  margin-bottom: 12px;
+  color: rgb(0, 0, 0, 0.5);
+  font-weight: 600;
+  display: block;
+  margin-top: 20px;
+}
+
+.settings-view h3 {
+  font-weight: 400;
+  margin-bottom: 30px;
+  font-size: 1.5em;
 }
 
 .art-studio-holder {
