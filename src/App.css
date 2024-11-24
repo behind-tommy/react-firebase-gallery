@@ -157,6 +157,31 @@ html, body, button {
   color: rgb(0, 0, 0, 0.7);
 }
 
+.settings-view {
+  position: absolute;
+  top: 50px;
+  right: 20px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  width: 300px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.settings-view.closed {
+  transform: translateY(-100%);
+  visibility: hidden;
+  opacity: 0;
+}
+
+.settings-view.open {
+  transform: translateY(0);
+  visibility: visible;
+  opacity: 1;
+}
+
 .art-studio-holder {
   width: 80%;
   margin: 0 auto;

@@ -5,9 +5,10 @@ import { GLTFLoader } from '/three-libraries/GLTFLoader.js';
 
 // Import Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDoc, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { getStorage, ref, getDownloadURL, connectStorageEmulator } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
+// Initialize Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCpDHNdkF12eCTW3D5W1FgkF0_KkOHqN4c",
     authDomain: "ai-gallery-55b8b.firebaseapp.com",
@@ -22,8 +23,59 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Connect to Emulators if Running Locally
+if (window.location.hostname === "localhost") {
+    console.log("Connecting to Firestore and Storage emulators...");
+    connectFirestoreEmulator(db, "localhost", 8081); // Firestore emulator default port
+    connectStorageEmulator(storage, "localhost", 9199); // Storage emulator default port
+}
+
 // Loader to load models
 const loader = new GLTFLoader();
+
+// ---------------------------------------- Section: Fetch DB data ---------------------------------------- //
+
+// Function to fetch gallery and artist data based on gallery URL slug
+async function fetchGalleryAndArtist() {
+    try {
+        const gallerySlug = window.gallerySlug || 'default-gallery'; // Ensure slug exists
+        console.log(`Fetching gallery for slug: ${gallerySlug}`);
+
+        // Step 1: Fetch gallery data
+        const galleryQuery = query(
+            collection(db, 'galleries'),
+            where('defaultGalleryUrl', '==', `${gallerySlug}`)
+        );
+        const gallerySnapshot = await getDocs(galleryQuery);
+
+        if (gallerySnapshot.empty) {
+            throw new Error(`Gallery not found for slug: ${gallerySlug}`);
+        }
+
+        const galleryDoc = gallerySnapshot.docs[0];
+        const galleryData = galleryDoc.data();
+        const galleryId = galleryDoc.id;
+
+        // Step 2: Fetch artist data
+        const userDocRef = doc(db, 'users', galleryData.artistId);
+        const userDoc = await getDoc(userDocRef);
+        const artistName = userDoc.exists() ? userDoc.data().artistName : 'Unknown Artist';
+
+        console.log('Fetched gallery and artist data:', { galleryData, artistName });
+
+        return { galleryData, artistName, galleryId };
+    } catch (error) {
+        console.error('Error fetching gallery or artist data:', error);
+        return null;
+    }
+}
+
+// Fetch gallery and artist data
+const galleryAndArtist = await fetchGalleryAndArtist();
+if (!galleryAndArtist) {
+    console.error('Failed to initialize gallery due to missing data.');
+}
+console.log(galleryAndArtist);
 
 // ---------------------------------------- Section: Welcome ---------------------------------------- //
 
@@ -298,7 +350,7 @@ windowPanelMesh.receiveShadow = true;  // Allow windows to receive some lighting
 scene.add(windowPanelMesh);
 
 // Load skybox
-textureLoader.load('./img/sky-2.jpg', function (texture) {
+textureLoader.load('/img/sky-2.jpg', function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping; // Use equirectangular reflection mapping to create a smooth sky
     scene.background = texture;
 });
@@ -332,7 +384,7 @@ function loadModel(modelPath, scene, position = { x: 0, y: 0, z: 0 }, scale = 1,
 
             // Add the model to the scene
             scene.add(model);
-            console.log('Model loaded successfully');
+            // console.log('Model loaded successfully');
         },
         undefined,
         (error) => {
@@ -467,6 +519,38 @@ scene.add(cornerLight4);
 const framedArtworks = {};
 const artCards = [];
 
+// List of art positions and params, which will be used to generate artwork in the gallery
+const positions = [
+    // Left wall
+    { position: { x: -14.7, y: 1.5, z: 7.5 }, rotation: { x: 0, y: Math.PI/2, z: 0 }, height: 1.5, facing: "right" },
+    { position: { x: -14.7, y: 1.5, z: 3 }, rotation: { x: 0, y: Math.PI/2, z: 0 }, height: 1.5, facing: "right" },
+    { position: { x: -14.7, y: 1.5, z: -1.5 }, rotation: { x: 0, y: Math.PI/2, z: 0 }, height: 1.5, facing: "right" },
+    { position: { x: -14.7, y: 1.5, z: -6 }, rotation: { x: 0, y: Math.PI/2, z: 0 }, height: 1.5, facing: "right" },
+    { position: { x: -14.7, y: 1.5, z: -12 }, rotation: { x: 0, y: Math.PI/2, z: 0 }, height: 1.5, facing: "right" },
+    // Right wall
+    { position: { x: 14.7, y: 1.5, z: 7.5 }, rotation: { x: 0, y: -Math.PI/2, z: 0 }, height: 1.5, facing: "left" },
+    { position: { x: 14.7, y: 1.5, z: 3 }, rotation: { x: 0, y: -Math.PI/2, z: 0 }, height: 1.5, facing: "left" },
+    { position: { x: 14.7, y: 1.5, z: -1.5 }, rotation: { x: 0, y: -Math.PI/2, z: 0 }, height: 1.5, facing: "left" },
+    { position: { x: 14.7, y: 1.5, z: -6 }, rotation: { x: 0, y: -Math.PI/2, z: 0 }, height: 1.5, facing: "left" },
+    { position: { x: 14.7, y: 1.5, z: -12 }, rotation: { x: 0, y: -Math.PI/2, z: 0 }, height: 0.4, facing: "left" },
+    // Left inner block
+    { position: { x: -7, y: 1.5, z: blockDepth + 6.8 }, rotation: { x: 0, y: 0, z: 0 }, height: 1.5, facing: "front" },
+    { position: { x: -7, y: 1.5, z: 6.7 }, rotation: { x: 0, y: Math.PI, z: 0 }, height: 1.5, facing: "back" },
+    { position: { x: -7, y: 1.5, z: blockDepth -0.2 }, rotation: { x: 0, y: 0, z: 0 }, height: 1.5, facing: "front" },
+    { position: { x: -7, y: 1.5, z: -0.3 }, rotation: { x: 0, y: Math.PI, z: 0 }, height: 1.5, facing: "back" },
+    { position: { x: -7, y: 1.5, z: blockDepth - 7.2 }, rotation: { x: 0, y: 0, z: 0 }, height: 2.5, facing: "front" },
+    { position: { x: -7, y: 1.5, z: -7.3 }, rotation: { x: 0, y: Math.PI, z: 0 }, height: 2.5, facing: "back" },
+    // Right inner block
+    { position: { x: 7, y: 1.5, z: blockDepth + 6.8 }, rotation: { x: 0, y: 0, z: 0 }, height: 1.5, facing: "front" },
+    { position: { x: 7, y: 1.5, z: 6.7 }, rotation: { x: 0, y: Math.PI, z: 0 }, height: 1.5, facing: "back" },
+    { position: { x: 7, y: 1.5, z: blockDepth - 0.2 }, rotation: { x: 0, y: 0, z: 0 }, height: 1.5, facing: "front" },
+    { position: { x: 7, y: 1.5, z: -0.3 }, rotation: { x: 0, y: Math.PI, z: 0 }, height: 1.5, facing: "back" },
+    { position: { x: 7, y: 1.5, z: blockDepth - 7.2 }, rotation: { x: 0, y: 0, z: 0 }, height: 2.5, facing: "front" },
+    { position: { x: 7, y: 1.5, z: -7.3 }, rotation: { x: 0, y: Math.PI, z: 0 }, height: 2.5, facing: "back" },
+    // Near and back walls (Large displays)
+    { position: { x: 0, y: 2.8, z: 17.2 }, rotation: { x: 0, y: Math.PI, z: 0 }, height: 4.2, facing: "back" },
+    { position: { x: 0, y: 2.9, z: -17.2 }, rotation: { x: 0, y: 0, z: 0 }, height: 4.8, facing: "front" },
+];
 
 // Function to create framed artwork & art description card
 async function createFramedArtwork(
@@ -474,7 +558,7 @@ async function createFramedArtwork(
     frameDepth,
     position,
     rotation,
-    height = 1.5,
+    defaultHeight = 1.5, // default height
     facing = "front"
 ) {
     const docRef = doc(db, "spaces", id); // Assume 'artworks' collection stores data
@@ -482,9 +566,22 @@ async function createFramedArtwork(
 
     if (docSnap.exists()) {
         const artworkData = docSnap.data();
-        const storageRef = ref(storage, artworkData.artUrl);
-        const imageURL = await getDownloadURL(storageRef);
 
+        const placeholderUrl = "/img/agents.png"; // Define a placeholder URL
+
+        // Get the image URL (directly if it's a placeholder, or from Firebase Storage if artUrl is valid)
+        let imageURL;
+        try {
+            const artUrl = artworkData.artUrl || placeholderUrl; // Use placeholder if artUrl is missing
+            imageURL = artUrl === placeholderUrl
+                ? placeholderUrl // Directly use the placeholder
+                : await getDownloadURL(ref(storage, artUrl)); // Fetch from Firebase
+        } catch (error) {
+            console.error("Error fetching artwork URL, using placeholder instead:", error);
+            imageURL = placeholderUrl; // Fallback to placeholder in case of an error
+        }
+
+        // Load the texture
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load(imageURL, (texture) => {
             // Set the texture encoding for gamma correction
@@ -493,9 +590,10 @@ async function createFramedArtwork(
             // Calculate the aspect ratio of the image
             const aspectRatio = texture.image.width / texture.image.height;
 
-            // Define base height or width and adjust the other dimension to keep the aspect ratio
-            const baseHeight = height; // Set a base height for all artworks (adjust as desired)
-            const artworkHeight = baseHeight;
+            // Determine artwork height dynamically and set width per the aspect ratio
+            const artworkHeight = aspectRatio < 1
+                ? defaultHeight * (1 / aspectRatio) // Taller if aspect ratio indicates a tall image
+                : defaultHeight; // Default height otherwise
             const artworkWidth = artworkHeight * aspectRatio;
 
             // Create PlaneGeometry for the artwork with correct dimensions
@@ -544,7 +642,7 @@ async function createFramedArtwork(
             const cardHeight = 0.15; // Height of the description card
             const gap = 0.1; // Gap between the artwork and the description card
 
-            const cardTextureURL = "./models/textures/gallery/artcard.jpg"; // Replace with your card texture URL
+            const cardTextureURL = "/models/textures/gallery/artcard.jpg"; // Replace with your card texture URL
             textureLoader.load(cardTextureURL, (cardTexture) => {
                 const cardMaterial = new THREE.MeshBasicMaterial({
                     map: cardTexture,
@@ -613,267 +711,318 @@ async function createFramedArtwork(
     }
 }
 
+// Query Firestore for artworks belonging to the gallery.
+async function fetchArtworksForGallery(galleryId) {
+    try {
+        const artworksQuery = query(
+            collection(db, "spaces"), // "spaces" holds individual artwork data
+            where("galleryId", "==", galleryId) // Match the gallery ID
+        );
 
-// Left inner block 1 front
-createFramedArtwork(
-    '1',
-    0.05, // Frame depth
-    { x: -7, y: 1.5, z: blockDepth + 6.8 }, // Position on the wall
-    { x: 0, y: 0, z: 0 },
-    1.5,
-    'front'
-);
+        const querySnapshot = await getDocs(artworksQuery);
+        if (querySnapshot.empty) {
+            console.warn("No artworks found for gallery:", galleryId);
+            return [];
+        }
 
-// Left inner block 1 back
-createFramedArtwork(
-    '2',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629010/beeb2_gm9gka.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: -7, y: 1.5, z: 6.7 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 },
-    1.5,
-    'back'
-);
+        // Map the artwork documents to their data
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id, // Document ID
+            ...doc.data() // Document fields
+        }));
+    } catch (error) {
+        console.error("Error fetching artworks for gallery:", error);
+        return [];
+    }
+}
 
-// Left inner block 2
-createFramedArtwork(
-    '14',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629012/bunny_kfwbzn.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: -7, y: 1.5, z: blockDepth - 0.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 },
-    1.5,
-    'front'
-);
+// Function to loop through the artwork and generate renders for each
+async function initializeGalleryArtworks(galleryId) {
+    const artworks = await fetchArtworksForGallery(galleryId);
+    console.log('artworks:', artworks)
+    if (!artworks || artworks.length === 0) {
+        console.warn("No artworks to render.");
+        return;
+    }
 
-// Left inner block 2 back
-createFramedArtwork(
-    '23',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164126/Galaxy_gynx7g_1_wxnepf.jpg',
-    0.05, // Frame depth
-    { x: -7, y: 1.5, z: -0.3 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 },
-    1.5,
-    'back'
-);
+    // Loop through the artworks and create framed artwork for each
+    artworks.forEach((artwork, index) => {
+        const { position, rotation, height, facing } = positions[index];
 
-// Left inner block 3
-createFramedArtwork(
-    '6',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164113/beeb9_optimized_spczzb_cbpsy9.jpg',
-    0.05, // Frame depth
-    { x: -7, y: 1.5, z: blockDepth - 7.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 }, // Rotation
-    2.5,
-    'front'
-);
+        createFramedArtwork(
+            artwork.id, // Firestore document ID
+            0.05, // Frame depth
+            position,
+            rotation,
+            height, // Use dynamic height
+            facing
+        );
+    });
+}
 
-// Left inner block 3 back
-createFramedArtwork(
-    '5',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164114/beeb10_optimized_uwzapp_nxs7p8.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: -7, y: 1.5, z: -7.3 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 }, // Rotation
-    2.5,
-    'back'
-);
+// Dynamically load artworks
+await initializeGalleryArtworks(galleryAndArtist.galleryId); // Use the gallery ID
 
-// Right inner block 1 front
-createFramedArtwork(
-    '3',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164123/Wolf_Flowers_i0ugzp_1_p2i0ms.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: 7, y: 1.5, z: blockDepth + 6.8 }, // Position on the wall
-    { x: 0, y: 0, z: 0 },
-    1.5,
-    'front'
-);
 
-// Right inner block 1 back
-createFramedArtwork(
-    '9',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629011/beeb5_tzqowu.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: 7, y: 1.5, z: 6.7 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 },
-    1.5,
-    'back'
-);
+// // Left wall
 
-// Right inner block 2
-createFramedArtwork(
-    '8',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629013/beeb8_wzbs73.jpg',
-    0.05, // Frame depth
-    { x: 7, y: 1.5, z: blockDepth - 0.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 },
-    1.5,
-    'front'
-);
+// createFramedArtwork(
+//     '10',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164110/Pollen_Count_m7nvpf_1_jfhtws.jpg',
+//     0.05, // Frame depth
+//     { x: -14.7, y: 1.5, z: 7.5 }, // Position on the wall
+//     { x: 0, y: Math.PI/2, z: 0 },
+//     1.5,
+//     'right'
+// );
 
-// Right inner block 2 back
-createFramedArtwork(
-    '20',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164116/bobby2_q2jy1t_drcolt.jpg',
-    0.05, // Frame depth
-    { x: 7, y: 1.5, z: -0.3 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 },
-    1.5,
-    'back'
-);
+// createFramedArtwork(
+//     '11',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164120/sticks_hbcvvz_1_pxfntt.jpg',
+//     0.05, // Frame depth
+//     { x: -14.7, y: 1.5, z: 3 }, // Position on the wall
+//     { x: 0, y: Math.PI/2, z: 0 },
+//     1.5,
+//     'right'
+// );
 
-// Right inner block 3
-createFramedArtwork(
-    '4',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164117/Carrot_Rabbit_zo38g0_1_phaoap.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: 7, y: 1.5, z: blockDepth - 7.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 },
-    1.5,
-    'front'
-);
+// createFramedArtwork(
+//     '12',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164110/stork_c6zszs_1_f3mbf5.jpg',
+//     0.05, // Frame depth
+//     { x: -14.7, y: 1.5, z: -1.5 }, // Position on the wall
+//     { x: 0, y: Math.PI/2, z: 0 },
+//     1.5,
+//     'right'
+// );
 
-// Right inner block 3 back
-createFramedArtwork(
-    '7',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629012/beeb11_optimized_xrovyr.png',
-    0.05, // Frame depth
-    { x: 7, y: 1.5, z: -7.3 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 }, // Rotation
-    2.5,
-    'back'
-);
+// createFramedArtwork(
+//     '13',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164118/river_durh8e_1_o5zyr2.jpg',
+//     0.05, // Frame depth
+//     { x: -14.7, y: 1.5, z: -6 }, // Position on the wall
+//     { x: 0, y: Math.PI/2, z: 0 },
+//     1.5,
+//     'right'
+// );
 
-// Left wall
+// createFramedArtwork(
+//     '24',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164107/Milking_Cows_lzvfm8_1_ruwn2w.jpg',
+//     0.05, // Frame depth
+//     { x: -14.7, y: 1.5, z: -12 }, // Position on the wall
+//     { x: 0, y: Math.PI/2, z: 0 },
+//     1.5,
+//     'right'
+// );
 
-createFramedArtwork(
-    '10',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164110/Pollen_Count_m7nvpf_1_jfhtws.jpg',
-    0.05, // Frame depth
-    { x: -14.7, y: 1.5, z: 7.5 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 },
-    1.5,
-    'right'
-);
+// // Right wall
 
-createFramedArtwork(
-    '11',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164120/sticks_hbcvvz_1_pxfntt.jpg',
-    0.05, // Frame depth
-    { x: -14.7, y: 1.5, z: 3 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 },
-    1.5,
-    'right'
-);
+// createFramedArtwork(
+//     '15',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164121/The_Art_Of_The_Duck_wskvvm_1_eldxuj.jpg',
+//     0.05, // Frame depth
+//     { x: 14.7, y: 1.5, z: 7.5 }, // Position on the wall
+//     { x: 0, y: -Math.PI/2, z: 0 },
+//     1.5,
+//     'left'
+// );
 
-createFramedArtwork(
-    '12',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164110/stork_c6zszs_1_f3mbf5.jpg',
-    0.05, // Frame depth
-    { x: -14.7, y: 1.5, z: -1.5 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 },
-    1.5,
-    'right'
-);
+// createFramedArtwork(
+//     '16',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164124/Dripping_Red_nmqi0e_1_uhyrjx.jpg',
+//     0.05, // Frame depth
+//     { x: 14.7, y: 1.5, z: 3 }, // Position on the wall
+//     { x: 0, y: -Math.PI/2, z: 0 },
+//     1.5,
+//     'left'
+// );
 
-createFramedArtwork(
-    '13',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164118/river_durh8e_1_o5zyr2.jpg',
-    0.05, // Frame depth
-    { x: -14.7, y: 1.5, z: -6 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 },
-    1.5,
-    'right'
-);
+// createFramedArtwork(
+//     '17',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164112/Sunflower_Hammy_chyxpe_1_qyevxj.jpg',
+//     0.05, // Frame depth
+//     { x: 14.7, y: 1.5, z: -1.5 }, // Position on the wall
+//     { x: 0, y: -Math.PI/2, z: 0 },
+//     1.5,
+//     'left'
+// );
 
-createFramedArtwork(
-    '24',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164107/Milking_Cows_lzvfm8_1_ruwn2w.jpg',
-    0.05, // Frame depth
-    { x: -14.7, y: 1.5, z: -12 }, // Position on the wall
-    { x: 0, y: Math.PI/2, z: 0 },
-    1.5,
-    'right'
-);
+// createFramedArtwork(
+//     '18',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164109/Mother_Of_Cats_xzku8x_1_gu5hyr.jpg',
+//     0.05, // Frame depth
+//     { x: 14.7, y: 1.5, z: -6 }, // Position on the wall
+//     { x: 0, y: -Math.PI/2, z: 0 },
+//     1.5,
+//     'left'
+// );
 
-// Right wall
+// createFramedArtwork(
+//     '19',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629012/hammy_2_optimized_vrngwm.png',
+//     0.05, // Frame depth
+//     { x: 14.7, y: 1.5, z: -12 }, // Position on the wall
+//     { x: 0, y: -Math.PI/2, z: 0 }, // Rotation
+//     0.4,
+//     'left'
+// );
 
-createFramedArtwork(
-    '15',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164121/The_Art_Of_The_Duck_wskvvm_1_eldxuj.jpg',
-    0.05, // Frame depth
-    { x: 14.7, y: 1.5, z: 7.5 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 },
-    1.5,
-    'left'
-);
+// // Left inner block 1 front
+// createFramedArtwork(
+//     '1',
+//     0.05, // Frame depth
+//     { x: -7, y: 1.5, z: blockDepth + 6.8 }, // Position on the wall
+//     { x: 0, y: 0, z: 0 },
+//     1.5,
+//     'front'
+// );
 
-createFramedArtwork(
-    '16',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164124/Dripping_Red_nmqi0e_1_uhyrjx.jpg',
-    0.05, // Frame depth
-    { x: 14.7, y: 1.5, z: 3 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 },
-    1.5,
-    'left'
-);
+// // Left inner block 1 back
+// createFramedArtwork(
+//     '2',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629010/beeb2_gm9gka.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: -7, y: 1.5, z: 6.7 }, // Position on the wall
+//     { x: 0, y: Math.PI, z: 0 },
+//     1.5,
+//     'back'
+// );
 
-createFramedArtwork(
-    '17',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164112/Sunflower_Hammy_chyxpe_1_qyevxj.jpg',
-    0.05, // Frame depth
-    { x: 14.7, y: 1.5, z: -1.5 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 },
-    1.5,
-    'left'
-);
+// // Left inner block 2
+// createFramedArtwork(
+//     '14',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629012/bunny_kfwbzn.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: -7, y: 1.5, z: blockDepth - 0.2 }, // Position on the wall
+//     { x: 0, y: 0, z: 0 },
+//     1.5,
+//     'front'
+// );
 
-createFramedArtwork(
-    '18',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164109/Mother_Of_Cats_xzku8x_1_gu5hyr.jpg',
-    0.05, // Frame depth
-    { x: 14.7, y: 1.5, z: -6 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 },
-    1.5,
-    'left'
-);
+// // Left inner block 2 back
+// createFramedArtwork(
+//     '23',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164126/Galaxy_gynx7g_1_wxnepf.jpg',
+//     0.05, // Frame depth
+//     { x: -7, y: 1.5, z: -0.3 }, // Position on the wall
+//     { x: 0, y: Math.PI, z: 0 },
+//     1.5,
+//     'back'
+// );
 
-createFramedArtwork(
-    '19',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629012/hammy_2_optimized_vrngwm.png',
-    0.05, // Frame depth
-    { x: 14.7, y: 1.5, z: -12 }, // Position on the wall
-    { x: 0, y: -Math.PI/2, z: 0 }, // Rotation
-    0.4,
-    'left'
-);
+// // Left inner block 3
+// createFramedArtwork(
+//     '6',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164113/beeb9_optimized_spczzb_cbpsy9.jpg',
+//     0.05, // Frame depth
+//     { x: -7, y: 1.5, z: blockDepth - 7.2 }, // Position on the wall
+//     { x: 0, y: 0, z: 0 }, // Rotation
+//     2.5,
+//     'front'
+// );
 
-// Far wall
+// // Left inner block 3 back
+// createFramedArtwork(
+//     '5',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164114/beeb10_optimized_uwzapp_nxs7p8.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: -7, y: 1.5, z: -7.3 }, // Position on the wall
+//     { x: 0, y: Math.PI, z: 0 }, // Rotation
+//     2.5,
+//     'back'
+// );
 
-createFramedArtwork(
-    '21',
-    // // './img/sky.jpg',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629011/beeb6_ufqxwn.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: 0, y: 2.9, z: -17.2 }, // Position on the wall
-    { x: 0, y: 0, z: 0 }, // Rotation
-    4.8,
-    'front'
-);
+// // Right inner block 1 front
+// createFramedArtwork(
+//     '3',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164123/Wolf_Flowers_i0ugzp_1_p2i0ms.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: 7, y: 1.5, z: blockDepth + 6.8 }, // Position on the wall
+//     { x: 0, y: 0, z: 0 },
+//     1.5,
+//     'front'
+// );
 
-// Near back wall
+// // Right inner block 1 back
+// createFramedArtwork(
+//     '9',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629011/beeb5_tzqowu.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: 7, y: 1.5, z: 6.7 }, // Position on the wall
+//     { x: 0, y: Math.PI, z: 0 },
+//     1.5,
+//     'back'
+// );
 
-createFramedArtwork(
-    '22',
-    // './img/sky.jpg',
-    // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164368/Cherry_Pond_xgglbx_1_qkeqxo.jpg', // Replace with your image URL
-    0.05, // Frame depth
-    { x: 0, y: 2.8, z: 17.2 }, // Position on the wall
-    { x: 0, y: Math.PI, z: 0 }, // Rotation
-    4.2,
-    'back'
-);
+// // Right inner block 2
+// createFramedArtwork(
+//     '8',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629013/beeb8_wzbs73.jpg',
+//     0.05, // Frame depth
+//     { x: 7, y: 1.5, z: blockDepth - 0.2 }, // Position on the wall
+//     { x: 0, y: 0, z: 0 },
+//     1.5,
+//     'front'
+// );
+
+// // Right inner block 2 back
+// createFramedArtwork(
+//     '20',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164116/bobby2_q2jy1t_drcolt.jpg',
+//     0.05, // Frame depth
+//     { x: 7, y: 1.5, z: -0.3 }, // Position on the wall
+//     { x: 0, y: Math.PI, z: 0 },
+//     1.5,
+//     'back'
+// );
+
+// // Right inner block 3
+// createFramedArtwork(
+//     '4',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164117/Carrot_Rabbit_zo38g0_1_phaoap.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: 7, y: 1.5, z: blockDepth - 7.2 }, // Position on the wall
+//     { x: 0, y: 0, z: 0 },
+//     1.5,
+//     'front'
+// );
+
+// // Right inner block 3 back
+// createFramedArtwork(
+//     '7',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629012/beeb11_optimized_xrovyr.png',
+//     0.05, // Frame depth
+//     { x: 7, y: 1.5, z: -7.3 }, // Position on the wall
+//     { x: 0, y: Math.PI, z: 0 }, // Rotation
+//     2.5,
+//     'back'
+// );
+
+// // Near back wall
+
+// createFramedArtwork(
+//     '22',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1731164368/Cherry_Pond_xgglbx_1_qkeqxo.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: 0, y: 2.8, z: 17.2 }, // Position on the wall
+//     { x: 0, y: Math.PI, z: 0 }, // Rotation
+//     4.2,
+//     'back'
+// );
+
+// // Far wall
+
+// createFramedArtwork(
+//     '21',
+//     // 'https://res.cloudinary.com/dsjopahtl/image/upload/v1730629011/beeb6_ufqxwn.jpg', // Replace with your image URL
+//     0.05, // Frame depth
+//     { x: 0, y: 2.9, z: -17.2 }, // Position on the wall
+//     { x: 0, y: 0, z: 0 }, // Rotation
+//     4.8,
+//     'front'
+// );
+
 
 // ---------------------------------------- Section: View control with mouse movement ---------------------------------------- //
 
@@ -899,20 +1048,20 @@ const debounceDuration = 1100;
 
 // Pointer lock state change listener
 document.addEventListener('pointerlockchange', () => {
-    console.log("PointerLockElement:", document.pointerLockElement);
-    console.log("Renderer DOM Element:", renderer.domElement);
+    // console.log("PointerLockElement:", document.pointerLockElement);
+    // console.log("Renderer DOM Element:", renderer.domElement);
 
     if (document.pointerLockElement === renderer.domElement) {
-        console.log("Pointer lock acquired.");
+        // console.log("Pointer lock acquired.");
         canLock = true;
     } else {
-        console.log("Pointer lock released.");
+        // console.log("Pointer lock released.");
         canLock = false;
 
         // Prevent immediate re-locking
         setTimeout(() => {
             canLock = true;
-            console.log("Pointer lock is now allowed again.");
+            // console.log("Pointer lock is now allowed again.");
         }, debounceDuration);
     }
 });
@@ -928,15 +1077,6 @@ renderer.domElement.addEventListener('click', () => {
     }
 });
 
-
-
-controls.addEventListener('lock', () => {
-    console.log('PointerLockControls: locked');
-});
-
-controls.addEventListener('unlock', () => {
-    console.log('PointerLockControls: unlocked');
-});
 
 scene.add(controls.object);
 
@@ -1169,7 +1309,6 @@ function checkCameraCollisions(movementVector, bufferDistance) {
     // Check if any collision is within the buffer distance
     for (const intersect of collisions) {
         if (intersect.distance < bufferDistance) {
-            console.log("collided!")
             return true; // Collision detected
         }
     }
@@ -1226,8 +1365,8 @@ function onPointerClick(event) {
         // Start chat if the visitor is focused on an artwork and is not moving
         if (!clickedVisitor.userData.isMoving && clickedVisitor.userData.currentArtwork) {
             startChatWithVisitor(clickedVisitor);
-            console.log(clickedVisitor);
-            console.log(clickedVisitor.userData.currentArtwork.userData.imageURL);
+            // console.log(clickedVisitor);
+            // console.log(clickedVisitor.userData.currentArtwork.userData.imageURL);
             return; // Exit early to avoid checking for artwork interactions
         }
     }
@@ -1235,7 +1374,7 @@ function onPointerClick(event) {
     const artCardIntersections = raycaster.intersectObjects(artCards, true).filter(intersect => intersect.distance <= maxDistance);
     // If intersect, call the open art desc overlay func, passing in the artworkId
     if (artCardIntersections.length > 0) {
-        console.log(artCardIntersections[0].object.userData.artworkId);
+        // console.log(artCardIntersections[0].object.userData.artworkId);
         showArtworkDescOverlay(artCardIntersections[0].object.userData.artworkId);
         return;
     }
@@ -1362,7 +1501,6 @@ const observer = new MutationObserver((mutationsList) => {
             // Try to find the "chat-close-btn" element in the DOM
             const chatCloseButton = document.getElementById("chat-close-btn");
             if (chatCloseButton) { // If the button is found
-                console.log("Attaching click event to chat-close-btn");
                 // Attach a click event listener to the button to call the closeChatOverlay function
                 chatCloseButton.addEventListener("click", closeChatOverlay);
                 // Stop observing further DOM changes to improve performance since the button was found
@@ -1372,7 +1510,6 @@ const observer = new MutationObserver((mutationsList) => {
             const artworkDescCloseButton = document.getElementById("artwork-desc-close-btn");
             
             if (artworkDescCloseButton) { // If the button is found
-                console.log("Attaching click event to artwork-desc-close-btn");
                 // Attach a click event listener to the button to call the closeChatOverlay function
                 artworkDescCloseButton.addEventListener("click", closeArtworkDescOverlay);
                 // Stop observing further DOM changes to improve performance since the button was found
@@ -1493,7 +1630,7 @@ function startVisitorCountdown(visitor, visitorIndex) {
 
 setTimeout(() => {
     visitors.forEach((visitor, index) => {
-        console.log(`Starting movement for visitor ${visitor.userData.id}`);
+        // console.log(`Starting movement for visitor ${visitor.userData.id}`);
         moveVisitorToArtwork(visitor, index);
     });
 }, 10000); // Delay by 2 seconds to ensure artworks are ready
@@ -1539,7 +1676,7 @@ function loadVisitorModel(visitorId, modelPath, scaleX, scaleY, scaleZ, position
             // Add visitor model to the scene and to the visitors array
             scene.add(visitor);
             visitors.push(visitor); // Add to global visitors array for interaction handling
-            console.log(visitor);
+            // console.log(visitor);
 
         },
         undefined,
@@ -1550,13 +1687,13 @@ function loadVisitorModel(visitorId, modelPath, scaleX, scaleY, scaleZ, position
 }
 
 // Load Marshal
-loadVisitorModel(1, '/models/marshal.gltf', 0.18, 0.18, 0.18, -0.2, './img/marshal.png', 'Marshal', 'A fan of kool art');
+loadVisitorModel(1, '/models/marshal.gltf', 0.18, 0.18, 0.18, -0.2, '/img/marshal.png', 'Marshal', 'A fan of kool art');
 // Load Isabelle
-loadVisitorModel(2, '/models/isabelle.gltf', 0.017, 0.017, 0.017, 0.05, './img/isabelle.png', 'Isabelle', 'I love visiting galleries!');
+loadVisitorModel(2, '/models/isabelle.gltf', 0.017, 0.017, 0.017, 0.05, '/img/isabelle.png', 'Isabelle', 'I love visiting galleries!');
 // Load agent S
-loadVisitorModel(3, '/models/agent_s.gltf', 7, 7, 7, 0.01, './img/agents.png', 'Agent Hammy', 'Why am I here?');
+loadVisitorModel(3, '/models/agent_s.gltf', 7, 7, 7, 0.01, '/img/agents.png', 'Agent Hammy', 'Why am I here?');
 // Load Celeste
-loadVisitorModel(4, '/models/celeste.gltf', 0.045, 0.045, 0.045, 0.02, './img/celeste.png', 'Celeste', 'I love quacking');
+loadVisitorModel(4, '/models/celeste.gltf', 0.045, 0.045, 0.045, 0.02, '/img/celeste.png', 'Celeste', 'I love quacking');
 
 // Visitor personalities (one for each visitor): Marshal, Isabelle, Agent S, Celeste
 const visitorPersonalities = [
@@ -1629,6 +1766,7 @@ function startChatWithVisitor(visitor) {
     // Start the conversation with an OpenAI-generated comment about the artwork
     const artworkURL = visitor.userData.currentArtwork.imageURL;
     const artworkId = visitor.userData.currentArtwork.imageId;
+    console.log("visitor's current artwork:", artworkId, artworkURL);
     generateArtworkComment(visitor, artworkURL, artworkId);
 
     showChatOverlay(visitor.userData.profilePic, visitor.userData.name, visitor.userData.desc);
@@ -1946,7 +2084,9 @@ async function generateArtworkComment(visitor, artworkURL, artworkId) {
     // Proxy the image file from DB via cloud functions -> to clean it up for OpenAI to consume
     const proxyFunctionUrl = 'https://getimageproxy-fegobqnsiq-uc.a.run.app';
     const filePath = `art/${artworkId}.jpg`; // Adjust this to match your Firebase file structure
+    console.log('proxy file path: ', filePath);
     const imageURL = `${proxyFunctionUrl}?path=${encodeURIComponent(filePath)}`;
+    console.log('proxy: ', imageURL);
     
     // Create prompt
     // const artPrompt = `You have ${personality}. Tell me what you're thinking about this artwork?`;

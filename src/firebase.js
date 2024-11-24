@@ -3,7 +3,12 @@
 import { initializeApp } from 'firebase/app';
 // Initializes and returns the Firebase Authentication service for the app.
 // It allows you to handle user authentication operations like login, sign-up, and logout.
-import { getAuth } from 'firebase/auth';
+import { getAuth, connectAuthEmulator  } from 'firebase/auth';
+// Emulators
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
+
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -19,11 +24,25 @@ const firebaseConfig = {
 // Initialize Firebase
 // The app object now represents the connection to Firebase.
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+// If run on local, use the emulator instead of prod DB
+if (window.location.hostname === "localhost") {
+  // Connect to Firestore Emulator
+  connectFirestoreEmulator(db, "localhost", 8081);
+  // Connect to Auth Emulator (if using authentication)
+  connectAuthEmulator(auth, "http://localhost:9099");
+  // Connect to Storage emulator
+  connectStorageEmulator(storage, 'localhost', 9199);
+
+}
 
 // This initializes Firebase Authentication using the app instance.
 // The auth object allows you to perform authentication tasks, like signing in users, managing user sessions, etc.
 // Exports the auth object so it can be used in other parts of your application, such as your login or signup components.
-export const auth = getAuth(app);
+export { db, auth, storage };
 
 // This exports the initialized app instance as the default export of the file.
 // Other files can import this app instance to access Firebase services if needed (e.g., Firestore, Storage).

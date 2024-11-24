@@ -33,8 +33,12 @@ const { defineSecret } = require('firebase-functions/params');
 // This secret will be stored securely in Google Cloud's Secret Manager.
 const openaiApiKey = defineSecret('OPENAI_API_KEY');
 
+// Initialize Firebase Admin SDK
+const admin = require('firebase-admin');
+// Initialize Firebase Admin SDK
+admin.initializeApp();
 
-// OpenAPI cloud function
+// -----------------Section: Use Cloud function for OpenAPI api call (so I send my secret key via cloud securely) ----------------- //
 exports.fetchOpenAIResponse = functions.https.onRequest(
     { secrets: [openaiApiKey] },
     (req, res) => {
@@ -54,7 +58,7 @@ exports.fetchOpenAIResponse = functions.https.onRequest(
           res.status(200).send(response.data);
         } catch (error) {
           console.error('Error calling OpenAI:', error.response ? error.response.data : error.message);
-      res.status(500).send({ error: error.response ? error.response.data : error.message });
+          res.status(500).send({ error: error.response ? error.response.data : error.message });
         }
       });
     }
@@ -62,9 +66,7 @@ exports.fetchOpenAIResponse = functions.https.onRequest(
 
 
 // -----------------Section: Use Cloud function to proxy a storage file, to send to OpenAI (adds clear file extension, eliminates temp tokens that confuse API) ----------------- //
-const admin = require('firebase-admin');
-// Initialize Firebase Admin SDK
-admin.initializeApp();
+
 
 // Proxy Cloud Function
 exports.getImageProxy = functions.https.onRequest((req, res) => {
@@ -80,9 +82,17 @@ exports.getImageProxy = functions.https.onRequest((req, res) => {
       // Reference the file in Firebase Storage
       const bucket = admin.storage().bucket();
       const file = bucket.file(filePath);
+      console.log(`Attempting to fetch file from path: ${filePath}`);
 
       // Fetch metadata to determine Content-Type
-      const [metadata] = await file.getMetadata();
+      try {
+        const [metadata] = await file.getMetadata();
+        console.log("File metadata retrieved successfully:", metadata);
+      } catch (error) {
+          console.error("Failed to retrieve file metadata:", error);
+          res.status(404).send("File not found.");
+          return;
+      }
       const contentType = metadata.contentType || 'image/jpeg';
       console.log(metadata.contentType);
 
@@ -90,8 +100,14 @@ exports.getImageProxy = functions.https.onRequest((req, res) => {
       res.setHeader('Content-Type', contentType);
 
       // Stream the file content directly to the response
-      const fileStream = file.createReadStream();
-      fileStream.pipe(res);
+      try {
+        const fileStream = file.createReadStream();
+        fileStream.pipe(res);
+      } catch (error) {
+          console.error("Error creating file stream:", error);
+          res.status(500).send("Error fetching file content.");
+          return;
+      }
 
       // Handle stream errors
       fileStream.on('error', (error) => {
